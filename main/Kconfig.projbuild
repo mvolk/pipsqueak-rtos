@@ -1,0 +1,27 @@
+menu "pipsqueak-rtos Configuration"
+
+  config EXTERNAL_DS18B20_GPIO
+    int "1-Wire GPIO for external DS18B20 temperature sensor"
+  range 0 33
+  default 18
+  help
+    GPIO number (IOxx) to access the One Wire Bus to which the external temperature
+    sensor - and only the external temperature sensor - is connected.
+
+    Some GPIOs are used for other purposes (flash connections, etc.) and cannot be used.
+
+    GPIOs 34-39 are input-only so cannot be used to drive the One Wire Bus.
+
+config INTERNAL_DS18B20_GPIO
+    int "1-Wire GPIO for internal (on-board) DS18B20 temperature sensor"
+  range 0 33
+  default 19
+  help
+    GPIO number (IOxx) to access the One Wire Bus to which the internal temperature
+    sensor - and only the internal temperature sensor - is connected.
+
+    Some GPIOs are used for other purposes (flash connections, etc.) and cannot be used.
+
+    GPIOs 34-39 are input-only so cannot be used to drive the One Wire Bus.
+
+  endmenu
