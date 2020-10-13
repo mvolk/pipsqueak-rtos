@@ -24,11 +24,14 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/queue.h"
+#include "driver/i2c.h"
 #include "driver/gpio.h"
 #include "driver/rmt.h"
 #include "esp_system.h"
 #include "esp_spi_flash.h"
 #include "temperatureSensor.h"
+#include "ds3231.h"
+#include "timekeeper.h"
 
 typedef struct
 {
@@ -46,21 +49,30 @@ StaticQueue_t internalSensorQueue;
 TemperatureSensor_t internalSensor;
 TemperatureFeed_t internalTemperatureFeed;
 
-void consumeTemperature(void * pvParameters) {
+DS3231_Info ds3231;
+
+
+void consumeTemperature(void *pvParameters) {
     TemperatureFeed_t * feed = (TemperatureFeed_t *) pvParameters;
     QueueHandle_t queue = feed->queue;
     float reading;
     while (true) {
-      if (xQueueReceive(queue, &reading, 5000.0 / portTICK_PERIOD_MS) == pdTRUE) {
-          printf("CONSUMED: %.3f C from %s\n", reading, feed->name);
-      } else {
-          printf("FAILED to read from %s queue (empty?)\n", feed->name);
-      }
+        if (xQueueReceive(queue, &reading, 5000.0 / portTICK_PERIOD_MS) == pdTRUE) {
+            printf("CONSUMED: %.3f C from %s\n", reading, feed->name);
+        } else {
+            printf("FAILED to read from %s queue (empty?)\n", feed->name);
+        }
     }
 }
 
 void app_main(void)
 {
+    // Let things stabilize
+    vTaskDelay(2000.0 / portTICK_PERIOD_MS);
+
+    ds3231_init_info(&ds3231, I2C_NUM_0, 21, 22, 1000);
+    xTaskCreate(&timekeeper_task, "timekeeperTask", 2048, &ds3231, 5, NULL);
+
     externalSensor.name = "External sensor";
     externalSensor.oneWireGPIO = (CONFIG_EXTERNAL_DS18B20_GPIO);
     externalSensor.tx_channel = RMT_CHANNEL_0;
