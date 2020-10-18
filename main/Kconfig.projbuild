@@ -1,7 +1,7 @@
-menu "pipsqueak-rtos Configuration"
+menu "Pipsqueak"
 
-  config EXTERNAL_DS18B20_GPIO
-    int "1-Wire GPIO for external DS18B20 temperature sensor"
+config EXTERNAL_DS18B20_GPIO
+  int "1-Wire GPIO for external DS18B20 temperature sensor"
   range 0 33
   default 18
   help
@@ -13,7 +13,7 @@ menu "pipsqueak-rtos Configuration"
     GPIOs 34-39 are input-only so cannot be used to drive the One Wire Bus.
 
 config INTERNAL_DS18B20_GPIO
-    int "1-Wire GPIO for internal (on-board) DS18B20 temperature sensor"
+  int "1-Wire GPIO for internal (on-board) DS18B20 temperature sensor"
   range 0 33
   default 19
   help
@@ -24,4 +24,66 @@ config INTERNAL_DS18B20_GPIO
 
     GPIOs 34-39 are input-only so cannot be used to drive the One Wire Bus.
 
-  endmenu
+config SPI_MISO_GPIO
+  int "SPI MISO GPIO Pin"
+  range 0 33
+  default 12
+  help
+    GPIO number (IOxx) serving as the SPI MISO signal carrier.
+
+    Some GPIOs are used for other purposes (flash connections, etc.) and cannot be used.
+
+    GPIOs 34-39 are input-only so cannot be used to drive the One Wire Bus.
+
+    GPIO 12 by default.
+
+config SPI_MOSI_GPIO
+  int "SPI MOSI GPIO Pin"
+  range 0 33
+  default 13
+  help
+    GPIO number (IOxx) serving as the SPI MOSI signal carrier.
+
+    Some GPIOs are used for other purposes (flash connections, etc.) and cannot be used.
+
+    GPIOs 34-39 are input-only so cannot be used to drive the One Wire Bus.
+
+    GPIO 13 by default.
+
+config SPI_CLK_GPIO
+  int "SPI Clock GPIO Pin"
+  range 0 33
+  default 14
+  help
+    GPIO number (IOxx) serving as the SPI clock signal carrier.
+
+    Some GPIOs are used for other purposes (flash connections, etc.) and cannot be used.
+
+    GPIOs 34-39 are input-only so cannot be used to drive the One Wire Bus.
+
+    GPIO 14 by default.
+
+config SPI_DMA_CHANNEL
+  int "DMA Channel"
+  range 1 2
+  default 2
+  help
+    The DMA channel that the Pipsqueak's SPI peripheral interface will use.
+
+    There are two DMA channels available for use by the SPI hosts: channel
+    1 and channel 2.
+
+    Channel 2 by default.
+
+config SPI_HOST
+  int "SPI Host"
+  range 1 2
+  default 1
+  help
+    The SPI host that the Pipsqueak's SPI peripheral interface will use.
+
+    HSPI (1) or VSPI (2).
+
+    HSPI by default.
+
+endmenu
