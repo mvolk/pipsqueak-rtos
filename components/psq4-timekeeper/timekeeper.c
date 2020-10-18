@@ -19,7 +19,7 @@
 #define ONE_HOUR 3600 // in seconds
 #define MS_FACTOR 1000.0
 
-const char * TAG = "timekeeper";
+static const char * TIMEKEEPER_TAG = "timekeeper";
 
 static time_t last_sync_from_sntp = 0;
 static time_t last_sync_from_rtc = 0;
@@ -39,7 +39,11 @@ void sync_from_external_rtc(DS3231_Info *ds3231) {
     struct timeval tv = { now, USEC_GUESS };
     settimeofday(&tv, &tz);
     last_sync_from_rtc = now;
-    ESP_LOGD(TAG, "Internal clock synced to external RTC; unix_timestamp=%ld", now);
+    ESP_LOGD(
+        TIMEKEEPER_TAG,
+        "Internal clock synced to external RTC; unix_timestamp=%ld",
+        now
+    );
 }
 
 void sync_to_external_rtc(DS3231_Info *ds3231) {
@@ -48,13 +52,21 @@ void sync_to_external_rtc(DS3231_Info *ds3231) {
   memcpy(&time, localtime(&now), sizeof(struct tm));
   ds3231_set_time(ds3231, &time);
   last_sync_of_rtc = now;
-  ESP_LOGD(TAG, "External RTC synced to internal clock; unix_timestamp=%ld", now);
+  ESP_LOGD(
+      TIMEKEEPER_TAG,
+      "External RTC synced to internal clock; unix_timestamp=%ld",
+      now
+    );
 }
 
 void sntp_sync_notification_cb(struct timeval *tv)
 {
     last_sync_from_sntp = unix_timestamp();
-    ESP_LOGD(TAG, "Internal clock synchronized via SNTP; unix_timestamp=%ld", last_sync_from_sntp);
+    ESP_LOGD(
+        TIMEKEEPER_TAG,
+        "Internal clock synchronized via SNTP; unix_timestamp=%ld",
+        last_sync_from_sntp
+    );
 }
 
 void set_up_sntp() {
@@ -81,7 +93,10 @@ void timekeeper_task(void *pvParameters) {
     bool oscillator_stopped;
     ds3231_get_oscillator_stop_flag(ds3231, &oscillator_stopped);
     if (oscillator_stopped) {
-        ESP_LOGE(TAG, "DS3231 RTC oscillator stopped, which means that the DS3231's battery is likely dead");
+        ESP_LOGE(
+            TIMEKEEPER_TAG,
+            "DS3231 RTC oscillator stopped, which means that the DS3231's battery is likely dead"
+        );
         ds3231_clear_oscillator_stop_flag(ds3231);
     }
 
