@@ -1,21 +1,20 @@
-#include "gfx.h"
-#include "sprites.h"
+#include "psq4_gfx.h"
 #include <string.h>
 #include <esp_log.h>
 
-#include <esp_heap_trace.h>
 
-static const char * GFX_TAG = "gfx";
-
-#define DIM_UNDEFINED 255
+static const char * PSQ4_GFX_TAG = "psq4-gfx";
 
 
-esp_err_t gfx_init(gfx_canvas_t *canvas, gfx_dim_t *dim) {
+esp_err_t psq4_gfx_init(
+    psq4_gfx_canvas_t *canvas,
+    psq4_gfx_dim_t *dim)
+{
     canvas->dim = *dim;
     canvas->mutex = xSemaphoreCreateMutex();
     canvas->updates = xSemaphoreCreateBinary();
     if (!canvas->mutex || !canvas->updates) {
-        ESP_LOGE(GFX_TAG, "Unable to allocate semaphores");
+        ESP_LOGE(PSQ4_GFX_TAG, "Unable to allocate semaphores");
         return ESP_ERR_NO_MEM;
     }
     canvas->dirty_row_cursor = 0;
@@ -23,13 +22,13 @@ esp_err_t gfx_init(gfx_canvas_t *canvas, gfx_dim_t *dim) {
     canvas->dirty_row_count = dim->h;
     canvas->dirty_rows = (bool *) calloc(dim->h, sizeof(bool));
     if (!canvas->dirty_rows) {
-        ESP_LOGE(GFX_TAG, "Unable to allocate dirty rows array");
+        ESP_LOGE(PSQ4_GFX_TAG, "Unable to allocate dirty rows array");
         return ESP_ERR_NO_MEM;
     }
     for (size_t i = 0; i < dim->h; i++) canvas->dirty_rows[i] = true;
     canvas->data = (uint16_t *) calloc(dim->w * dim->h, sizeof(uint16_t));
     if (!canvas->data) {
-        ESP_LOGE(GFX_TAG, "Unable to allocate canvas data buffer");
+        ESP_LOGE(PSQ4_GFX_TAG, "Unable to allocate canvas data buffer");
         return ESP_ERR_NO_MEM;
     }
     xSemaphoreGive(canvas->updates);
@@ -38,11 +37,11 @@ esp_err_t gfx_init(gfx_canvas_t *canvas, gfx_dim_t *dim) {
 }
 
 
-void gfx__flush(
-    gfx_canvas_t *canvas,
+void psq4_gfx__flush(
+    psq4_gfx_canvas_t *canvas,
     void *buffer,
     size_t max_len_bytes,
-    gfx_bounds_t *bounds,
+    psq4_gfx_bounds_t *bounds,
     size_t *len_bytes)
 {
     if (canvas->dirty_row_count == 0) return;
@@ -76,40 +75,43 @@ void gfx__flush(
 }
 
 
-esp_err_t gfx_flush(
-    gfx_canvas_t *canvas,
+esp_err_t psq4_gfx_flush(
+    psq4_gfx_canvas_t *canvas,
     void * buffer,
     size_t max_len_bytes,
-    gfx_bounds_t *bounds,
+    psq4_gfx_bounds_t *bounds,
     size_t * len_bytes)
 {
     if (max_len_bytes < canvas->row_size_bytes) {
-        ESP_LOGE(GFX_TAG, "gfx_clean called with buffer too small to hold a single row");
+        ESP_LOGE(
+            PSQ4_GFX_TAG,
+            "psq4_gfx_flush(...) called with buffer too small to hold a single row"
+        );
         return ESP_ERR_INVALID_SIZE;
     }
     if (xSemaphoreTake(canvas->updates, portMAX_DELAY) == pdTRUE) {
         if (xSemaphoreTake(canvas->mutex, portMAX_DELAY) == pdTRUE) {
             if (canvas->dirty_row_count > 0) {
-                gfx__flush(canvas, buffer, max_len_bytes, bounds, len_bytes);
+                psq4_gfx__flush(canvas, buffer, max_len_bytes, bounds, len_bytes);
             }
             if (canvas->dirty_row_count > 0) {
                 xSemaphoreGive(canvas->updates);
             }
             xSemaphoreGive(canvas->mutex);
         } else {
-            ESP_LOGE(GFX_TAG, "Impossible timeout encountered");
+            ESP_LOGE(PSQ4_GFX_TAG, "Impossible timeout encountered");
             esp_restart();
         }
     } else {
-        ESP_LOGE(GFX_TAG, "Impossible timeout encountered");
+        ESP_LOGE(PSQ4_GFX_TAG, "Impossible timeout encountered");
         esp_restart();
     }
     return ESP_OK;
 }
 
 
-static void gfx__dirty_row(
-    gfx_canvas_t *canvas,
+static void psq4_gfx__dirty_row(
+    psq4_gfx_canvas_t *canvas,
     uint8_t y)
 {
     if (!canvas->dirty_rows[y]) {
@@ -120,19 +122,19 @@ static void gfx__dirty_row(
 }
 
 
-static void gfx__dirty_bounds(
-    gfx_canvas_t *canvas,
-    gfx_bounds_t *bounds)
+static void psq4_gfx__dirty_bounds(
+    psq4_gfx_canvas_t *canvas,
+    psq4_gfx_bounds_t *bounds)
 {
     for (size_t y = bounds->y0; y <= bounds->y1; y++) {
-        gfx__dirty_row(canvas, y);
+        psq4_gfx__dirty_row(canvas, y);
     }
 }
 
 
-static bool gfx__invalid_coords(
-    gfx_canvas_t *canvas,
-    gfx_coords_t *coords)
+static bool psq4_gfx__invalid_coords(
+    psq4_gfx_canvas_t *canvas,
+    psq4_gfx_coords_t *coords)
 {
     if (coords->x >= canvas->dim.w) return true;
     if (coords->y >= canvas->dim.h) return true;
@@ -140,9 +142,9 @@ static bool gfx__invalid_coords(
 }
 
 
-static bool gfx__invalid_bounds(
-    gfx_canvas_t *canvas,
-    gfx_bounds_t *bounds)
+static bool psq4_gfx__invalid_bounds(
+    psq4_gfx_canvas_t *canvas,
+    psq4_gfx_bounds_t *bounds)
 {
     if (bounds->x1 >= canvas->dim.w) return true;
     if (bounds->x0 >= canvas->dim.w) return true;
@@ -154,28 +156,31 @@ static bool gfx__invalid_bounds(
 }
 
 
-esp_err_t gfx_constrain(gfx_canvas_t *canvas, gfx_bounds_t *bounds) {
+esp_err_t psq4_gfx_constrain(
+    psq4_gfx_canvas_t *canvas,
+    psq4_gfx_bounds_t *bounds)
+{
     if (bounds->x1 >= canvas->dim.w) {
         bounds->x1 = canvas->dim.w - 1;
     }
     if (bounds->y1 >= canvas->dim.h) {
         bounds->y1= canvas->dim.h - 1;
     }
-    if (gfx__invalid_bounds(canvas, bounds)) {
+    if (psq4_gfx__invalid_bounds(canvas, bounds)) {
         return ESP_ERR_INVALID_ARG;
     }
     return ESP_OK;
 }
 
 
-esp_err_t gfx_fill_px(
-    gfx_canvas_t *canvas,
+esp_err_t psq4_gfx_fill_px(
+    psq4_gfx_canvas_t *canvas,
     uint16_t color,
-    gfx_coords_t *coords)
+    psq4_gfx_coords_t *coords)
 {
-    if (gfx__invalid_coords(canvas, coords)) {
+    if (psq4_gfx__invalid_coords(canvas, coords)) {
         ESP_LOGE(
-            GFX_TAG,
+            PSQ4_GFX_TAG,
             "gfx_fill_px(...) called with invalid coords"
         );
         return ESP_ERR_INVALID_ARG;
@@ -184,26 +189,29 @@ esp_err_t gfx_fill_px(
     if (xSemaphoreTake(canvas->mutex, portMAX_DELAY) == pdTRUE) {
         j = (coords->y * canvas->dim.w) + coords->x;
         canvas->data[j] = color;
-        gfx__dirty_row(canvas, coords->y);
+        psq4_gfx__dirty_row(canvas, coords->y);
         xSemaphoreGive(canvas->mutex);
         return ESP_OK;
     } else {
-        ESP_LOGE(GFX_TAG, "gfx_fill_px failed to acquire gfx semaphore");
+        ESP_LOGE(
+            PSQ4_GFX_TAG,
+            "gfx_fill_px failed to acquire gfx semaphore"
+        );
         esp_restart();
     }
     return ESP_OK;
 }
 
 
-esp_err_t gfx_fill_rect(
-  gfx_canvas_t *canvas,
+esp_err_t psq4_gfx_fill_rect(
+  psq4_gfx_canvas_t *canvas,
   uint16_t color,
-  gfx_bounds_t *bounds)
+  psq4_gfx_bounds_t *bounds)
 {
-    if (gfx__invalid_bounds(canvas, bounds)) {
+    if (psq4_gfx__invalid_bounds(canvas, bounds)) {
         ESP_LOGE(
-            GFX_TAG,
-            "gfx_fill_rect(...) called with invalid bounds"
+            PSQ4_GFX_TAG,
+            "psq4_gfx_fill_rect(...) called with invalid bounds"
         );
         return ESP_ERR_INVALID_ARG;
     }
@@ -215,33 +223,35 @@ esp_err_t gfx_fill_rect(
                 canvas->data[j] = color;
             }
         }
-        gfx__dirty_bounds(canvas, bounds);
+        psq4_gfx__dirty_bounds(canvas, bounds);
         xSemaphoreGive(canvas->mutex);
     } else {
-        ESP_LOGE(GFX_TAG, "gfx_fill_px failed to acquire gfx semaphore");
+        ESP_LOGE(
+            PSQ4_GFX_TAG,
+            "psq4_gfx_fill_rect(...) failed to acquire gfx semaphore"
+        );
         esp_restart();
     }
     return ESP_OK;
 }
 
 
-static esp_err_t gfx__render_sprite(
-    gfx_canvas_t *canvas,
-    const uint8_t *sprite,
-    const gfx_dim_t *sprite_dim,
-    const gfx_coords_t *origin,
-    gfx_bounds_t *bounds)
+esp_err_t psq4_gfx_render_sprite(
+    psq4_gfx_canvas_t *canvas,
+    const psq4_gfx_sprite_t *sprite,
+    const psq4_gfx_coords_t *origin,
+    psq4_gfx_bounds_t *bounds)
 {
     esp_err_t ret;
     bounds->x0 = origin->x;
     bounds->y0 = origin->y;
-    bounds->x1 = bounds->x0 + sprite_dim->w - 1;
-    bounds->y1 = bounds->y0 + sprite_dim->h - 1;
-    ret = gfx_constrain(canvas, bounds);
+    bounds->x1 = bounds->x0 + sprite->dim.w - 1;
+    bounds->y1 = bounds->y0 + sprite->dim.h - 1;
+    ret = psq4_gfx_constrain(canvas, bounds);
     if (ret != ESP_OK) {
         ESP_LOGE(
-            GFX_TAG,
-            "Invalid origin provided to gfx_render_sprite(...)"
+            PSQ4_GFX_TAG,
+            "Invalid origin provided to psq4_gfx_render_sprite(...)"
         );
         return ret;
     }
@@ -249,53 +259,22 @@ static esp_err_t gfx__render_sprite(
         size_t src, dst;
         uint8_t src_row = 0;
         for (uint8_t y = bounds->y0; y <= bounds->y1; y++) {
-            src = src_row * sprite_dim->w;
+            src = src_row * sprite->dim.w;
             for (uint8_t x = bounds->x0; x <= bounds->x1; x++) {
                 dst = (y * canvas->dim.w) + x;
-                canvas->data[dst] = ((uint16_t *) sprite)[src];
+                canvas->data[dst] = sprite->data[src];
                 src++;
             }
             src_row++;
         }
-        gfx__dirty_bounds(canvas, bounds);
+        psq4_gfx__dirty_bounds(canvas, bounds);
         xSemaphoreGive(canvas->mutex);
-        return ESP_OK;
     } else {
-        ESP_LOGE(GFX_TAG, "gfx_fill_px failed to acquire gfx semaphore");
+        ESP_LOGE(
+            PSQ4_GFX_TAG,
+            "psq4_gfx_render_sprite failed to acquire gfx semaphore"
+        );
         esp_restart();
     }
-}
-
-
-esp_err_t gfx_render_sprite(
-    gfx_canvas_t *canvas,
-    gfx_sprite_t sprite,
-    const gfx_coords_t *origin,
-    gfx_bounds_t *bounds)
-{
-    switch (sprite) {
-        case gfx_sprite_wifi_ok:
-            return gfx__render_sprite(
-                canvas,
-                gfx_sprite_wifi_ok_data,
-                &gfx_sprite_wifi_ok_dim,
-                origin,
-                bounds
-            );
-        case gfx_sprite_wifi_fail:
-            return gfx__render_sprite(
-                canvas,
-                gfx_sprite_wifi_fail_data,
-                &gfx_sprite_wifi_fail_dim,
-                origin,
-                bounds
-            );
-        default:
-            ESP_LOGE(
-                GFX_TAG,
-                "Unsupported sprite: %d",
-                sprite
-            );
-            return ESP_ERR_INVALID_ARG;
-    }
+    return ESP_OK;
 }

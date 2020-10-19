@@ -1,6 +1,6 @@
 menu "Pipsqueak"
 
-config EXTERNAL_DS18B20_GPIO
+config PSQ4_EXTERNAL_DS18B20_GPIO
   int "1-Wire GPIO for external DS18B20 temperature sensor"
   range 0 33
   default 18
@@ -12,7 +12,7 @@ config EXTERNAL_DS18B20_GPIO
 
     GPIOs 34-39 are input-only so cannot be used to drive the One Wire Bus.
 
-config INTERNAL_DS18B20_GPIO
+config PSQ4_INTERNAL_DS18B20_GPIO
   int "1-Wire GPIO for internal (on-board) DS18B20 temperature sensor"
   range 0 33
   default 19
@@ -24,7 +24,7 @@ config INTERNAL_DS18B20_GPIO
 
     GPIOs 34-39 are input-only so cannot be used to drive the One Wire Bus.
 
-config SPI_MISO_GPIO
+config PSQ4_SPI_MISO_GPIO
   int "SPI MISO GPIO Pin"
   range 0 33
   default 12
@@ -37,7 +37,7 @@ config SPI_MISO_GPIO
 
     GPIO 12 by default.
 
-config SPI_MOSI_GPIO
+config PSQ4_SPI_MOSI_GPIO
   int "SPI MOSI GPIO Pin"
   range 0 33
   default 13
@@ -50,7 +50,7 @@ config SPI_MOSI_GPIO
 
     GPIO 13 by default.
 
-config SPI_CLK_GPIO
+config PSQ4_SPI_CLK_GPIO
   int "SPI Clock GPIO Pin"
   range 0 33
   default 14
@@ -63,7 +63,7 @@ config SPI_CLK_GPIO
 
     GPIO 14 by default.
 
-config SPI_DMA_CHANNEL
+config PSQ4_SPI_DMA_CHANNEL
   int "DMA Channel"
   range 1 2
   default 2
@@ -75,7 +75,7 @@ config SPI_DMA_CHANNEL
 
     Channel 2 by default.
 
-config SPI_HOST
+config PSQ4_SPI_HOST
   int "SPI Host"
   range 1 2
   default 1

@@ -1,5 +1,5 @@
-#ifndef GFX_H
-#define GFX_H
+#ifndef PSQ4_GFX_H
+#define PSQ4_GFX_H
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/semphr.h>
@@ -7,16 +7,6 @@
 
 // This is a naive implementation of a simple graphics
 // library for prototyping purposes only.
-
-
-/**
- * @brief Icons and images stored in program memory
- * and available for rendering.
- */
-typedef enum {
-    gfx_sprite_wifi_ok = 1,
-    gfx_sprite_wifi_fail = 2
-} gfx_sprite_t;
 
 
 /**
@@ -28,7 +18,7 @@ typedef enum {
 typedef struct {
     uint8_t w;
     uint8_t h;
-} gfx_dim_t;
+} psq4_gfx_dim_t;
 
 
 /**
@@ -39,7 +29,7 @@ typedef struct {
 typedef struct {
     uint8_t x;
     uint8_t y;
-} gfx_coords_t;
+} psq4_gfx_coords_t;
 
 
 /**
@@ -52,7 +42,16 @@ typedef struct {
     uint8_t y0;
     uint8_t x1;
     uint8_t y1;
-} gfx_bounds_t;
+} psq4_gfx_bounds_t;
+
+
+/**
+ * @brief A small image, icon, character, etc.
+ */
+typedef struct {
+    uint16_t *data;
+    psq4_gfx_dim_t dim;
+} psq4_gfx_sprite_t;
 
 
 /**
@@ -73,7 +72,7 @@ typedef struct {
     /** @brief canvas data buffer */
     uint16_t *data;
     /** @brief canvas dimensions */
-    gfx_dim_t dim;
+    psq4_gfx_dim_t dim;
     /** @brief mutex for read/write ops */
     SemaphoreHandle_t mutex;
     /**
@@ -102,7 +101,7 @@ typedef struct {
      * the display.
      */
     bool *dirty_rows;
-} gfx_canvas_t;
+} psq4_gfx_canvas_t;
 
 
 /**
@@ -116,9 +115,9 @@ typedef struct {
  * @return ESP_OK if everything went well, otherwise
  *         an error indicating what went wrong.
  */
-esp_err_t gfx_init(
-    gfx_canvas_t *canvas,
-    gfx_dim_t *dim
+esp_err_t psq4_gfx_init(
+    psq4_gfx_canvas_t *canvas,
+    psq4_gfx_dim_t *dim
 );
 
 
@@ -139,11 +138,11 @@ esp_err_t gfx_init(
  * @return ESP_OK if everything went well, otherwise
  *         an error indicating what went wrong.
  */
-esp_err_t gfx_flush(
-    gfx_canvas_t *canvas,
+esp_err_t psq4_gfx_flush(
+    psq4_gfx_canvas_t *canvas,
     void * buffer,
     size_t max_len_bytes,
-    gfx_bounds_t *bounds,
+    psq4_gfx_bounds_t *bounds,
     size_t * len_bytes
 );
 
@@ -167,9 +166,9 @@ esp_err_t gfx_flush(
  * @return ESP_OK if everything went well, otherwise
  *         an error indicating what went wrong.
  */
-esp_err_t gfx_constrain(
-    gfx_canvas_t *canvas,
-    gfx_bounds_t *bounds
+esp_err_t psq4_gfx_constrain(
+    psq4_gfx_canvas_t *canvas,
+    psq4_gfx_bounds_t *bounds
 );
 
 
@@ -185,10 +184,10 @@ esp_err_t gfx_constrain(
  * @return ESP_OK if everything went well, otherwise
  *         an error indicating what went wrong.
  */
-esp_err_t gfx_fill_px(
-    gfx_canvas_t *canvas,
+esp_err_t psq4_gfx_fill_px(
+    psq4_gfx_canvas_t *canvas,
     uint16_t color,
-    gfx_coords_t *coords
+    psq4_gfx_coords_t *coords
 );
 
 
@@ -201,10 +200,10 @@ esp_err_t gfx_fill_px(
  * @return ESP_OK if everything went well, otherwise
  *         an error indicating what went wrong.
  */
-esp_err_t gfx_fill_rect(
-    gfx_canvas_t *canvas,
+esp_err_t psq4_gfx_fill_rect(
+    psq4_gfx_canvas_t *canvas,
     uint16_t color,
-    gfx_bounds_t *bounds
+    psq4_gfx_bounds_t *bounds
 );
 
 
@@ -218,7 +217,8 @@ esp_err_t gfx_fill_rect(
  * simply truncated.
  *
  * @param canvas The canvas to paint on
- * @param sprite The enumerates sprite to render
+ * @param sprite The sprite's image data
+ * @param sprite_dim The sprite's dimensions
  * @param origin The coordinates on the canvas where
  *        the lower left-most pixel of the sprite will
  *        be rendered
@@ -227,12 +227,12 @@ esp_err_t gfx_fill_rect(
  * @return ESP_OK if everything went well, otherwise
  *         an error indicating what went wrong.
  */
-esp_err_t gfx_render_sprite(
-    gfx_canvas_t *canvas,
-    gfx_sprite_t sprite,
-    const gfx_coords_t *origin,
-    gfx_bounds_t *bounds
+esp_err_t psq4_gfx_render_sprite(
+    psq4_gfx_canvas_t *canvas,
+    const psq4_gfx_sprite_t *sprite,
+    const psq4_gfx_coords_t *origin,
+    psq4_gfx_bounds_t *bounds
 );
 
 
-#endif // GFX_H
+#endif // PSQ4_GFX_H

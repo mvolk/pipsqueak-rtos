@@ -24,28 +24,37 @@
  * SOFTWARE.
  */
 
-#include "spi_bus.h"
-#include <esp_log.h>
+#ifndef PSQ4_SPI_BUS_H
+#define PSQ4_SPI_BUS_H
 
-void spi_bus_init(
+#include <freertos/FreeRTOS.h>
+#include <driver/spi_master.h>
+#include <driver/gpio.h>
+
+/**
+ * @brief Initializes the SPI bus.
+ *
+ * Failure is fatal and results in a software restart. If
+ * this method returns, it succeeded.
+ *
+ * @param bus_cfg The bus configuration that this function
+ *        will populate.
+ * @param miso IO pin carrying SPI MISO signal
+ * @param mosi IO pin carrying SPI MOSI signal
+ * @param clk IO pin carrying SPI clock signal
+ * @param host SPI Host (HSPI or VSPI)
+ * @param dma_channel 1 or 2
+ * @param max_transfer_size_bytes The largest payload that
+ *        will need to be transmitted over this bus.
+ */
+void psq4_spi_bus_init(
     spi_bus_config_t * bus_cfg,
     gpio_num_t miso,
     gpio_num_t mosi,
     gpio_num_t clk,
     spi_host_device_t host,
     int dma_channel,
-    size_t max_transfer_size_bytes)
-{
-    bus_cfg->miso_io_num = miso;
-    bus_cfg->mosi_io_num = mosi;
-    bus_cfg->sclk_io_num = clk;
-    bus_cfg->quadwp_io_num = -1;
-    bus_cfg->quadhd_io_num = -1;
-    bus_cfg->max_transfer_sz = max_transfer_size_bytes;
-    esp_err_t ret = spi_bus_initialize(
-        host,
-        bus_cfg,
-        dma_channel
-    );
-    ESP_ERROR_CHECK(ret);
-}
+    size_t max_transfer_size_bytes
+);
+
+#endif // PSQ4_SPI_BUS_H
