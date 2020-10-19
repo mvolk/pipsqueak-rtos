@@ -5,6 +5,11 @@
 #include <freertos/semphr.h>
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 // This is a naive implementation of a simple graphics
 // library for prototyping purposes only.
 
@@ -234,5 +239,9 @@ esp_err_t psq4_gfx_render_sprite(
     psq4_gfx_bounds_t *bounds
 );
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // PSQ4_GFX_H

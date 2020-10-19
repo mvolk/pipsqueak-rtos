@@ -6,17 +6,21 @@
 #include <psq4_gfx.h>
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 typedef struct {
-    st7735r_device_handle_t display;
-    psq4_gfx_canvas_t *canvas;
     size_t max_trans_size;
 } psq4_ui_params_t;
 
 
-void psq4_ui_paint_task(void * pvParameters);
+void psq4_ui_task(void * pvParameters);
 
 
-void psq4_ui_flush_task(void * pvParameters);
-
+#ifdef __cplusplus
+}
+#endif
 
 #endif // PSQ4_UI_H

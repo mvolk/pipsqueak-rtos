@@ -25,14 +25,24 @@
  * Copyright (c) 2020 Michael Volk
  */
 
-#ifndef TIMEKEEPER_H
-#define TIMEKEEPER_H
+#ifndef PSQ4_TIME_H
+#define PSQ4_TIME_H
 
+#include <freertos/FreeRTOS.h>
 #include <sys/time.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
+/**
+ * @brief Returns the current unix timestamp.
+ *
+ * @return The number of seconds since Jan 1 1970 at midnight UTC
+ */
+time_t psq4_time_now();
+
 
 /**
  * @brief A task that maintains the system clock.
@@ -44,18 +54,13 @@ extern "C" {
  *
  * Infrequently updates the system time to match the external RTC time.
  *
- * @param ds3231 DS3231 device descriptor
+ * @param pvParameters ignored (NULL ok)
  */
-void timekeeper_task(void * pvParameters);
+void psq4_time_task(void *pvParameters);
 
-/**
- * @brief Returns the current unix timestamp.
- * @return The number of seconds since Jan 1 1970 at midnight UTC
- */
-time_t unix_timestamp();
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // TIMEKEEPER_H
+#endif // PSQ4_TIME_H
