@@ -27,32 +27,21 @@
  * Copyright (c) 2017 David Antliff
  */
 
-#ifndef TEMPERATURE_SENSOR_H
-#define TEMPERATURE_SENSOR_H
+#ifndef PSQ4_TEMPERATURE_H
+#define PSQ4_TEMPERATURE_H
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/queue.h"
-#include "driver/rmt.h"
-#include "ds18b20.h"
+#include <freertos/FreeRTOS.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct
-{
-    const char * name;
-    int oneWireGPIO;
-    rmt_channel_t tx_channel;
-    rmt_channel_t rx_channel;
-    DS18B20_RESOLUTION resolution;
-    QueueHandle_t queue;
-} TemperatureSensor_t;
 
-void senseTemperature(void * pvParameters);
+void psq4_temperature_tasks_init();
+
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // TEMPERATURE_SENSOR_H
+#endif // PSQ4_TEMPERATURE_H

@@ -1,4 +1,4 @@
-#include "timekeeper.h"
+#include "psq4_time.h"
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <string.h>
@@ -19,89 +19,104 @@
 #define ONE_HOUR 3600 // in seconds
 #define MS_FACTOR 1000.0
 
-static const char * TIMEKEEPER_TAG = "timekeeper";
+static const char * PSQ4_TIME_TAG = "psq4-time";
 
-static time_t last_sync_from_sntp = 0;
-static time_t last_sync_from_rtc = 0;
-static time_t last_sync_of_rtc = 0;
+static DS3231_Info psq4_time_ds3231;
+static time_t psq4_time_last_sync_from_sntp = 0;
+static time_t psq4_time_last_sync_from_rtc = 0;
+static time_t psq4_time_last_sync_of_rtc = 0;
+static bool psq4_time_oscillator_stopped = false;
 
-time_t unix_timestamp() {
+
+time_t psq4_time_now() {
   time_t now;
   time(&now);
   return now;
 }
 
-void sync_from_external_rtc(DS3231_Info *ds3231) {
+
+static void psq4_time_sync_from_external_rtc()
+{
     struct tm time;
     struct timezone tz = { 0, 0 };
-    ds3231_get_time(ds3231, &time);
+    ds3231_get_time(&psq4_time_ds3231, &time);
     time_t now = mktime(&time);
     struct timeval tv = { now, USEC_GUESS };
     settimeofday(&tv, &tz);
-    last_sync_from_rtc = now;
+    psq4_time_last_sync_from_rtc = now;
     ESP_LOGD(
-        TIMEKEEPER_TAG,
+        PSQ4_TIME_TAG,
         "Internal clock synced to external RTC; unix_timestamp=%ld",
         now
     );
 }
 
-void sync_to_external_rtc(DS3231_Info *ds3231) {
-  struct tm time;
-  time_t now = unix_timestamp();
-  memcpy(&time, localtime(&now), sizeof(struct tm));
-  ds3231_set_time(ds3231, &time);
-  last_sync_of_rtc = now;
-  ESP_LOGD(
-      TIMEKEEPER_TAG,
-      "External RTC synced to internal clock; unix_timestamp=%ld",
-      now
-    );
-}
 
-void sntp_sync_notification_cb(struct timeval *tv)
+static void psq4_time_sync_to_external_rtc()
 {
-    last_sync_from_sntp = unix_timestamp();
+    struct tm time;
+    time_t now = psq4_time_now();
+    memcpy(&time, localtime(&now), sizeof(struct tm));
+    ds3231_set_time(&psq4_time_ds3231, &time);
+    psq4_time_last_sync_of_rtc = now;
+    // We can now clear the stop flag, as we have a good value again
+    if (psq4_time_oscillator_stopped) {
+        ds3231_clear_oscillator_stop_flag(&psq4_time_ds3231);
+    }
     ESP_LOGD(
-        TIMEKEEPER_TAG,
-        "Internal clock synchronized via SNTP; unix_timestamp=%ld",
-        last_sync_from_sntp
+        PSQ4_TIME_TAG,
+        "External RTC synced to internal clock; unix_timestamp=%ld",
+        now
     );
 }
 
-void set_up_sntp() {
+
+static void psq4_time_sntp_sync_notification_cb(struct timeval *tv)
+{
+    psq4_time_last_sync_from_sntp = psq4_time_now();
+    ESP_LOGD(
+        PSQ4_TIME_TAG,
+        "Internal clock synchronized via SNTP; unix_timestamp=%ld",
+        psq4_time_last_sync_from_sntp
+    );
+}
+
+
+static void psq4_time_set_up_sntp()
+{
     sntp_setoperatingmode(SNTP_OPMODE_POLL);
     sntp_setservername(0, "pool.ntp.org");
-    sntp_set_time_sync_notification_cb(sntp_sync_notification_cb);
+    sntp_set_time_sync_notification_cb(psq4_time_sntp_sync_notification_cb);
 #ifdef CONFIG_SNTP_TIME_SYNC_METHOD_SMOOTH
     sntp_set_sync_mode(SNTP_SYNC_MODE_SMOOTH);
 #endif
     sntp_init();
 }
 
-void timekeeper_task(void *pvParameters) {
-    DS3231_Info *ds3231 = (DS3231_Info *)pvParameters;
+
+void psq4_time_task(void *pvParameters)
+{
+    // Initialize the RTC interface
+    ds3231_init_info(&psq4_time_ds3231, I2C_NUM_0, 21, 22, 1000);
 
     // Set system timezone to GMT
     setenv("TZ", "GMT+0", 1);
     tzset();
 
-    // Set the internal clock using the external RTC
-    sync_from_external_rtc(ds3231);
-
     // Check to see if the external RTC shut down unexpectedly
-    bool oscillator_stopped;
-    ds3231_get_oscillator_stop_flag(ds3231, &oscillator_stopped);
-    if (oscillator_stopped) {
+    ds3231_get_oscillator_stop_flag(&psq4_time_ds3231, &psq4_time_oscillator_stopped);
+    if (psq4_time_oscillator_stopped) {
         ESP_LOGE(
-            TIMEKEEPER_TAG,
+            PSQ4_TIME_TAG,
             "DS3231 RTC oscillator stopped, which means that the DS3231's battery is likely dead"
         );
-        ds3231_clear_oscillator_stop_flag(ds3231);
+    } else {
+        // Set the internal clock using the external RTC
+        psq4_time_sync_from_external_rtc();
     }
 
     // Use SNTP to correct clock drift
-    set_up_sntp();
+    psq4_time_set_up_sntp();
 
     // We'll be maintaining time via SNTP with our external RTC for backup.
     // If we recently got time via SNTP, correct the external RTC's (small) drift
@@ -112,17 +127,17 @@ void timekeeper_task(void *pvParameters) {
     // time
     while(true) {
         vTaskDelay((ONE_MINUTE * MS_FACTOR) / portTICK_PERIOD_MS);
-        time_t now = unix_timestamp();
-        time_t since_sync_from_sntp = now - last_sync_from_sntp;
-        time_t since_sync_from_rtc = now - last_sync_from_rtc;
-        time_t since_sync_of_rtc = now - last_sync_of_rtc;
+        time_t now = psq4_time_now();
+        time_t since_sync_from_sntp = now - psq4_time_last_sync_from_sntp;
+        time_t since_sync_from_rtc = now - psq4_time_last_sync_from_rtc;
+        time_t since_sync_of_rtc = now - psq4_time_last_sync_of_rtc;
         // Sync the RTC to SNTP if SNTP is working
         if (since_sync_from_sntp < (5 * ONE_MINUTE) && since_sync_of_rtc > ONE_HOUR) {
-            sync_to_external_rtc(ds3231);
+            psq4_time_sync_to_external_rtc();
         }
         // Sync from RTC if SNTP isn't working out
         if (since_sync_from_sntp > (2 * ONE_HOUR) && since_sync_from_rtc > ONE_HOUR) {
-            sync_from_external_rtc(ds3231);
+            psq4_time_sync_from_external_rtc();
         }
     }
 }
