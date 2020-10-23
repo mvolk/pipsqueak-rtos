@@ -1,9 +1,5 @@
 /*
- * Pipsqueak v4 SPI bus component
- *
  * MIT License
- *
- * Copyright (c) 2020 Michael Volk
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,39 +18,56 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
+ * Copyright (c) 2020 Michael Volk
  */
 
-#ifndef PSQ4_SPI_BUS_H
-#define PSQ4_SPI_BUS_H
+#ifndef PSQ4_SYSTEM_H
+#define PSQ4_SYSTEM_H
 
+#include <time.h>
 #include <freertos/FreeRTOS.h>
+#include <freertos/event_groups.h>
 #include <driver/spi_master.h>
-#include <driver/gpio.h>
+#include <esp_err.h>
 
-/**
- * @brief Initializes the SPI bus.
- *
- * Failure is fatal and results in a software restart. If
- * this method returns, it succeeded.
- *
- * @param bus_cfg The bus configuration that this function
- *        will populate.
- * @param miso IO pin carrying SPI MISO signal
- * @param mosi IO pin carrying SPI MOSI signal
- * @param clk IO pin carrying SPI clock signal
- * @param host SPI Host (HSPI or VSPI)
- * @param dma_channel 1 or 2
- * @param max_transfer_size_bytes The largest payload that
- *        will need to be transmitted over this bus.
- */
-void psq4_spi_bus_init(
-    spi_bus_config_t * bus_cfg,
-    gpio_num_t miso,
-    gpio_num_t mosi,
-    gpio_num_t clk,
-    spi_host_device_t host,
-    int dma_channel,
-    size_t max_transfer_size_bytes
-);
 
-#endif // PSQ4_SPI_BUS_H
+typedef struct {
+    spi_bus_config_t spi_bus_cfg;
+    EventGroupHandle_t event_group;
+} psq4_system_t;
+
+
+typedef psq4_system_t* psq4_system_handle_t;
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+/** @brief Initialize system functions */
+psq4_system_handle_t psq4_system_init();
+
+
+/** @brief Obtain a reference to the system state struct instance */
+psq4_system_handle_t psq4_system_state();
+
+
+/** @brief Wait for WiFi to be available */
+esp_err_t psq4_system_await_wifi(TickType_t xTicksToWait);
+
+
+/** @brief Wait for clock to be reliable */
+esp_err_t  psq4_system_await_clock(TickType_t xTicksToWait);
+
+
+/** @brief Return the current unix epoch time */
+time_t psq4_system_time();
+
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // PSQ4_SYSTEM_H

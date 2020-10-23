@@ -1,7 +1,4 @@
 /*
- * Periodically synchronizes the system time to a peripheral DS3231 real time
- * clock.
- *
  * MIT License
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,42 +22,23 @@
  * Copyright (c) 2020 Michael Volk
  */
 
-#ifndef PSQ4_TIME_H
-#define PSQ4_TIME_H
+#ifndef PSQ4_WIFI_H
+#define PSQ4_WIFI_H
 
 #include <freertos/FreeRTOS.h>
-#include <sys/time.h>
+#include <freertos/event_groups.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 
-/**
- * @brief Returns the current unix timestamp.
- *
- * @return The number of seconds since Jan 1 1970 at midnight UTC
- */
-time_t psq4_time_now();
-
-
-/**
- * @brief A task that maintains the system clock.
- *
- * Immediately sets the system timezone, synchronizes the ESP's RTC to the
- * time more precisely and persistently maintained by an external DS3231 RTC,
- * checks to see if the external RTC's battery might have died and sets up
- * syncing of both the system RTC and external RTC with NTP.
- *
- * Infrequently updates the system time to match the external RTC time.
- *
- * @param pvParameters ignored (NULL ok)
- */
-void psq4_time_task(void *pvParameters);
+/** @brief Initial the WiFi connectivity system. */
+void psq4_wifi_init(EventGroupHandle_t system_event_group);
 
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // PSQ4_TIME_H
+#endif // PSQ4_WIFI_H

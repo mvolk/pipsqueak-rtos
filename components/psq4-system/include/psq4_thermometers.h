@@ -20,22 +20,28 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
+ * Derived the MIT-licensed work of David Antliff
+ * https://github.com/DavidAntliff/esp32-ds18b20-example
+ * Original license reproduced above; original copyright reproduced below:
+ * Copyright (c) 2017 David Antliff
  */
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
 
-#include "psq4_ui.h"
-#include "psq4_system.h"
-#include "psq4_constants.h"
+#ifndef PSQ4_THERMOMETERS_H
+#define PSQ4_THERMOMETERS_H
+
+#include <freertos/FreeRTOS.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
-static psq4_ui_params_t ui_params;
+void psq4_thermometers_init();
 
 
-void app_main(void)
-{
-    /* psq4_system_handle_t system = */ psq4_system_init();
-
-    ui_params.max_trans_size = PSQ4_SPI_MAX_TRANS_SIZE_BYTES;
-    xTaskCreate(&psq4_ui_task, "uiTask", 4096, &ui_params, 5, NULL);
+#ifdef __cplusplus
 }
+#endif
+
+#endif // PSQ4_THERMOMETERS_H

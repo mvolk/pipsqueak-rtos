@@ -9,18 +9,7 @@
 
 // TODO: consider pinning tasks to different CPUs
 
-
-// TODO: make these configurable
-#define PSQ4_UI_PIN_NUM_CS   GPIO_NUM_27
-#define PSQ4_UI_PIN_NUM_DC   GPIO_NUM_25
-#define PSQ4_UI_PIN_NUM_RST  GPIO_NUM_26
-#define PSQ4_UI_PIN_NUM_BCKL GPIO_NUM_23
-#define PSQ4_UI_CANVAS_WIDTH_PX 128
-#define PSQ4_UI_CANVAS_HEIGHT_PX 128
-
-
 #define PSQ4_UI_COLOR_WHITE 0xFFFF
-
 
 #define PSQ4_UI_COLOR_BG PSQ4_UI_COLOR_WHITE
 
@@ -29,8 +18,8 @@ const char * PSQ4_UI_TAG = "psq4-ui";
 const psq4_gfx_coords_t psq4_ui_wifi_sprite_coords = { 104, 110 };
 psq4_gfx_bounds_t psq4_ui_wifi_sprite_bounds;
 psq4_gfx_dim_t psq4_ui_canvas_dim = {
-    PSQ4_UI_CANVAS_WIDTH_PX,
-    PSQ4_UI_CANVAS_HEIGHT_PX
+    CONFIG_PSQ4_DISPLAY_WIDTH,
+    CONFIG_PSQ4_DISPLAY_HEIGHT
 };
 psq4_gfx_canvas_t psq4_ui_canvas;
 st7735r_device_t psq4_ui_st7735r;
@@ -106,10 +95,10 @@ void psq4_ui_task(void * pvParameters)
     // TODO: clearing existing content if entering before an off cycle?
 
     psq4_ui_st7735r.host = CONFIG_PSQ4_SPI_HOST;
-    psq4_ui_st7735r.gpio_cs = PSQ4_UI_PIN_NUM_CS;
-    psq4_ui_st7735r.gpio_dc = PSQ4_UI_PIN_NUM_DC;
-    psq4_ui_st7735r.gpio_rst = PSQ4_UI_PIN_NUM_RST;
-    psq4_ui_st7735r.gpio_bckl = PSQ4_UI_PIN_NUM_BCKL;
+    psq4_ui_st7735r.gpio_cs = CONFIG_PSQ4_DISPLAY_CS_GPIO;
+    psq4_ui_st7735r.gpio_dc = CONFIG_PSQ4_DISPLAY_DC_GPIO;
+    psq4_ui_st7735r.gpio_rst = CONFIG_PSQ4_DISPLAY_RST_GPIO;
+    psq4_ui_st7735r.gpio_bckl = CONFIG_PSQ4_DISPLAY_BCKL_GPIO;
     adafruit_144_tft_init(&psq4_ui_st7735r);
     psq4_gfx_init(&psq4_ui_canvas, &psq4_ui_canvas_dim);
 

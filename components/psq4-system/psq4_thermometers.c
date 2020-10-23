@@ -27,7 +27,7 @@
  * Copyright (c) 2017 David Antliff
  */
 
-#include "psq4_temperature.h"
+#include "psq4_thermometers.h"
 #include <freertos/task.h>
 #include <freertos/queue.h>
 #include <driver/rmt.h>
@@ -53,7 +53,7 @@ typedef struct {
 } psq4_temperature_feed_t;
 
 
-const char * PSQ4_TEMPERATURE_TAG = "psq4-temperature";
+static const char * PSQ4_TEMPERATURE_TAG = "psq4-temperature";
 
 static uint8_t psq4_temperature_external_data[2 * sizeof(float)];
 static StaticQueue_t psq4_temperature_external_queue;
@@ -204,7 +204,7 @@ static void psq4_temperature_sense(void * pvParameters)
     }
 }
 
-void psq4_temperature_tasks_init() {
+void psq4_thermometers_init() {
     psq4_temperature_external_sensor.name = "External sensor";
     psq4_temperature_external_sensor.oneWireGPIO = (CONFIG_PSQ4_EXTERNAL_DS18B20_GPIO);
     psq4_temperature_external_sensor.tx_channel = RMT_CHANNEL_0;

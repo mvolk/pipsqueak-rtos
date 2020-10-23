@@ -1,8 +1,6 @@
 /*
  * MIT License
  *
- * Copyright (c) 2020 Michael Volk
- *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -21,27 +19,40 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * Derived the MIT-licensed work of David Antliff
- * https://github.com/DavidAntliff/esp32-ds18b20-example
- * Original license reproduced above; original copyright reproduced below:
- * Copyright (c) 2017 David Antliff
+ * Copyright (c) 2020 Michael Volk
  */
 
-#ifndef PSQ4_TEMPERATURE_H
-#define PSQ4_TEMPERATURE_H
+#ifndef PSQ4_TIME_H
+#define PSQ4_TIME_H
 
+#include <time.h>
 #include <freertos/FreeRTOS.h>
+#include <freertos/event_groups.h>
+
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 
-void psq4_temperature_tasks_init();
+/**
+ * @brief Returns the current unix timestamp.
+ *
+ * @return The number of seconds since Jan 1 1970 at midnight UTC
+ */
+time_t psq4_time_now();
+
+
+/**
+ * @brief Initialized the system timekeeping mechanisms.
+ *
+ * @param system_event_group
+ */
+void psq4_time_init(EventGroupHandle_t system_event_group);
 
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // PSQ4_TEMPERATURE_H
+#endif // PSQ4_TIME_H
