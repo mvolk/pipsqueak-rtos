@@ -1,9 +1,5 @@
 /*
- * Pipsqueak v4 SPI bus component
- *
  * MIT License
- *
- * Copyright (c) 2020 Michael Volk
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,30 +18,23 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
+ * Copyright (c) 2020 Michael Volk
  */
 
-#include "psq4_spi_bus.h"
-#include <esp_log.h>
+#ifndef PSQ4_CONSTANTS_H
+#define PSQ4_CONSTANTS_H
 
-void psq4_spi_bus_init(
-    spi_bus_config_t * bus_cfg,
-    gpio_num_t miso,
-    gpio_num_t mosi,
-    gpio_num_t clk,
-    spi_host_device_t host,
-    int dma_channel,
-    size_t max_transfer_size_bytes)
-{
-    bus_cfg->miso_io_num = miso;
-    bus_cfg->mosi_io_num = mosi;
-    bus_cfg->sclk_io_num = clk;
-    bus_cfg->quadwp_io_num = -1;
-    bus_cfg->quadhd_io_num = -1;
-    bus_cfg->max_transfer_sz = max_transfer_size_bytes;
-    esp_err_t ret = spi_bus_initialize(
-        host,
-        bus_cfg,
-        dma_channel
-    );
-    ESP_ERROR_CHECK(ret);
-}
+#include <freertos/FreeRTOS.h>
+
+
+// Code-level constants, supplementary to sdkconfig
+
+// See https://www.esp32.com/viewtopic.php?t=1442#p6613
+#define PSQ4_SPI_MAX_TRANS_SIZE_BYTES 4096
+
+#define PSQ4_WIFI_CONNECTED_BIT       BIT0
+#define PSQ4_CLOCK_READY_BIT          BIT1
+#define PSQ4_CLOCK_BATTERY_DEAD_BIT   BIT2
+
+#endif // PSQ4_CONSTANTS_H
