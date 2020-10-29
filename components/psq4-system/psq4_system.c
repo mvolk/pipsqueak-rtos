@@ -65,11 +65,17 @@ static void spi_init()
 
 
 psq4_system_handle_t psq4_system_init() {
-    psq4_system.event_group = xEventGroupCreate();
-    if (psq4_system.event_group == NULL) {
+    EventGroupHandle_t event_group = xEventGroupCreate();
+    if (event_group == NULL) {
       ESP_LOGE("psq4-system", "Failed to create event group");
       esp_restart();
     }
+    xEventGroupSetBits(event_group, PSQ4_WIFI_INITIALIZING_BIT);
+    xEventGroupSetBits(event_group, PSQ4_CLOCK_INITIALIZING_BIT);
+    xEventGroupSetBits(event_group, PSQ4_MQTT_INITIALIZING_BIT);
+    xEventGroupSetBits(event_group, PSQ4_THERMO_BOARD_INITIALIZING_BIT);
+    xEventGroupSetBits(event_group, PSQ4_THERMO_MEDIUM_INITIALIZING_BIT);
+    psq4_system.event_group = event_group;
 
     // Initialize NVS
     nvs_init();
@@ -78,13 +84,13 @@ psq4_system_handle_t psq4_system_init() {
     spi_init();
 
     // Initialize WiFi
-    psq4_wifi_init(psq4_system.event_group);
+    psq4_wifi_init(event_group);
 
     // Initialize temperature sensors
-    psq4_thermometers_init();
+    psq4_thermometers_init(event_group);
 
     // Initialize timekeeping
-    psq4_time_init(psq4_system.event_group);
+    psq4_time_init(event_group);
 
     return &psq4_system;
 }

@@ -34,6 +34,7 @@
 #include <esp_log.h>
 #include <owb.h>
 #include <owb_rmt.h>
+#include "psq4_constants.h"
 #include <ds18b20.h>
 
 
@@ -50,10 +51,13 @@ typedef struct {
 typedef struct {
     const char * name;
     QueueHandle_t queue;
+    EventGroupHandle_t system_event_group;
+    EventBits_t initializingBit;
+    EventBits_t okBit;
 } psq4_temperature_feed_t;
 
 
-static const char * PSQ4_TEMPERATURE_TAG = "psq4-temperature";
+static const char * PSQ4_TEMPERATURE_TAG = "psq4-system/thermometers";
 
 static uint8_t psq4_temperature_external_data[2 * sizeof(float)];
 static StaticQueue_t psq4_temperature_external_queue;
@@ -71,8 +75,11 @@ static void psq4_temperature_consume(void *pvParameters)
     psq4_temperature_feed_t * feed = (psq4_temperature_feed_t *) pvParameters;
     QueueHandle_t queue = feed->queue;
     float reading;
+    BaseType_t status_code;
     while (true) {
-        if (xQueueReceive(queue, &reading, 5000.0 / portTICK_PERIOD_MS) == pdTRUE) {
+        status_code = xQueueReceive(queue, &reading, 5000.0 / portTICK_PERIOD_MS);
+        if (status_code == pdTRUE) {
+            xEventGroupSetBits(feed->system_event_group, feed->okBit);
             ESP_LOGD(
                 PSQ4_TEMPERATURE_TAG,
                 "CONSUMED: %.3f C from %s",
@@ -80,12 +87,15 @@ static void psq4_temperature_consume(void *pvParameters)
                 feed->name
             );
         } else {
+            xEventGroupClearBits(feed->system_event_group, feed->okBit);
             ESP_LOGE(
                 PSQ4_TEMPERATURE_TAG,
-                "FAILED to read from %s queue (impossible timeout)",
-                feed->name
+                "FAILED to read from %s queue, code %d",
+                feed->name,
+                status_code
             );
         }
+        xEventGroupClearBits(feed->system_event_group, feed->initializingBit);
     }
 }
 
@@ -168,6 +178,7 @@ static void psq4_temperature_sense(void * pvParameters)
     ds18b20_use_crc(device, true);
     ds18b20_set_resolution(device, sensor->resolution);
 
+    int status_code = 0;
     int error_count = 0;
     int sample_count = 0;
     while (true) {
@@ -179,9 +190,19 @@ static void psq4_temperature_sense(void * pvParameters)
 
         // Read the results immediately after conversion otherwise it may fail
         // (using printf before reading may take too long)
+
         float reading;
-        if (ds18b20_read_temp(device, &reading) != DS18B20_OK) {
+        status_code = ds18b20_read_temp(device, &reading);
+        if (status_code != DS18B20_OK) {
             ++error_count;
+            ESP_LOGE(
+                PSQ4_TEMPERATURE_TAG,
+                "%s sample %d failed with code %d",
+                sensor->name,
+                ++sample_count,
+                status_code
+            );
+            continue;
         }
 
         // Print results in a separate loop, after all have been read
@@ -204,7 +225,7 @@ static void psq4_temperature_sense(void * pvParameters)
     }
 }
 
-void psq4_thermometers_init() {
+void psq4_thermometers_init(EventGroupHandle_t system_event_group) {
     psq4_temperature_external_sensor.name = "External sensor";
     psq4_temperature_external_sensor.oneWireGPIO = (CONFIG_PSQ4_EXTERNAL_DS18B20_GPIO);
     psq4_temperature_external_sensor.tx_channel = RMT_CHANNEL_0;
@@ -229,6 +250,9 @@ void psq4_thermometers_init() {
 
     psq4_temperature_external_feed.queue = external_queue;
     psq4_temperature_external_feed.name = "External sensor";
+    psq4_temperature_external_feed.system_event_group = system_event_group;
+    psq4_temperature_external_feed.initializingBit = PSQ4_THERMO_MEDIUM_INITIALIZING_BIT;
+    psq4_temperature_external_feed.okBit = PSQ4_THERMO_MEDIUM_OK_BIT;
     xTaskCreate(
         &psq4_temperature_consume,
         "externalTemperatureConsumeTask",
@@ -262,6 +286,9 @@ void psq4_thermometers_init() {
 
     psq4_temperature_internal_feed.queue = internal_queue;
     psq4_temperature_internal_feed.name = "Internal sensor";
+    psq4_temperature_internal_feed.system_event_group = system_event_group;
+    psq4_temperature_internal_feed.initializingBit = PSQ4_THERMO_BOARD_INITIALIZING_BIT;
+    psq4_temperature_internal_feed.okBit = PSQ4_THERMO_BOARD_OK_BIT;
     xTaskCreate(
         &psq4_temperature_consume,
         "internalTemperatureConsumeTask",

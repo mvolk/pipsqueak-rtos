@@ -33,7 +33,7 @@
 #include "psq4_constants.h"
 
 
-static const char *PSQ4_WIFI_TAG = "psq4_wifi";
+static const char *PSQ4_WIFI_TAG = "psq4_system/wifi";
 static uint32_t psq4_wifi_connect_retry = 0;
 
 
@@ -49,14 +49,16 @@ static void event_handler(
             esp_wifi_connect();
         } else if (event_id == WIFI_EVENT_STA_DISCONNECTED) {
             xEventGroupClearBits(system_event_group, PSQ4_WIFI_CONNECTED_BIT);
+            xEventGroupClearBits(system_event_group, PSQ4_WIFI_INITIALIZING_BIT);
             esp_wifi_connect();
             ESP_LOGI(PSQ4_WIFI_TAG, "WiFi disconnected, attempting to connect");
         }
     } else if (event_base == IP_EVENT) {
         if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
+            xEventGroupSetBits(system_event_group, PSQ4_WIFI_CONNECTED_BIT);
+            xEventGroupClearBits(system_event_group, PSQ4_WIFI_INITIALIZING_BIT);
             ESP_LOGI(PSQ4_WIFI_TAG, "WiFi connection established in station mode");
             psq4_wifi_connect_retry = 0;
-            xEventGroupSetBits(system_event_group, PSQ4_WIFI_CONNECTED_BIT);
         }
     }
 }

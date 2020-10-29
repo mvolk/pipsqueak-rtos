@@ -31,13 +31,14 @@
 #define PSQ4_THERMOMETERS_H
 
 #include <freertos/FreeRTOS.h>
+#include <freertos/event_groups.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 
-void psq4_thermometers_init();
+void psq4_thermometers_init(EventGroupHandle_t system_event_group);
 
 
 #ifdef __cplusplus
