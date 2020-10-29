@@ -47,7 +47,7 @@
 #define SET_ENV_OVERWRITE 1
 
 
-static const char * PSQ4_TIME_TAG = "psq4-time";
+static const char * PSQ4_TIME_TAG = "psq4-system/time";
 static DS3231_Info psq4_time_ds3231;
 static time_t psq4_time_last_sync_from_sntp = 0;
 static time_t psq4_time_last_sync_from_rtc = 0;
@@ -89,8 +89,20 @@ static void psq4_time_sync_to_external_rtc()
     psq4_time_last_sync_of_rtc = now;
     // We can now clear the stop flag, as we have a good value again
     if (psq4_time_rtc_unreliable) {
-        ds3231_clear_oscillator_stop_flag(&psq4_time_ds3231);
-        psq4_time_rtc_unreliable = false;
+        esp_err_t result = ds3231_clear_oscillator_stop_flag(&psq4_time_ds3231);
+        if (result == ESP_OK) {
+            psq4_time_rtc_unreliable = false;
+            ESP_LOGI(
+                PSQ4_TIME_TAG,
+                "External RTC oscillator stop flag cleared"
+            );
+        } else {
+            ESP_LOGE(
+                PSQ4_TIME_TAG,
+                "Failed to clear external RTC oscillator stop flag: %s",
+                esp_err_to_name(result)
+            );
+        }
     }
     ESP_LOGI(
         PSQ4_TIME_TAG,
@@ -110,6 +122,7 @@ static void psq4_time_sntp_sync_notification_cb(struct timeval *tv)
         tv->tv_sec
     );
     xEventGroupSetBits(event_group, PSQ4_CLOCK_READY_BIT);
+    xEventGroupClearBits(event_group, PSQ4_CLOCK_INITIALIZING_BIT);
 }
 
 
@@ -155,6 +168,7 @@ void psq4_time_task(void *ignored)
         // Set the internal clock using the external RTC
         psq4_time_sync_from_external_rtc();
         xEventGroupSetBits(event_group, PSQ4_CLOCK_READY_BIT);
+        xEventGroupClearBits(event_group, PSQ4_CLOCK_INITIALIZING_BIT);
     }
 
     // Use SNTP to correct clock drift

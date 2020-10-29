@@ -1,3 +1,15 @@
-idf_component_register(SRCS "wifi_ok.c" "wifi_fail.c" "psq4_ui.c"
+idf_component_register(SRCS
+                          "battery_dead_off.c"
+                          "battery_dead_on.c"
+                          "battery_ok.c"
+                          "mqtt_connecting.c"
+                          "mqtt_fail.c"
+                          "mqtt_ok.c"
+                          "wifi_connecting_1.c"
+                          "wifi_connecting_2.c"
+                          "wifi_connecting_3.c"
+                          "wifi_ok.c"
+                          "wifi_fail.c"
+                          "psq4_ui.c"
                        INCLUDE_DIRS "include"
-                       REQUIRES "esp32-st7735r" "psq4-gfx" "esp32-adafruit-144-tft")
+                       REQUIRES "esp32-st7735r" "psq4-gfx" "psq4-system" "esp32-adafruit-144-tft")

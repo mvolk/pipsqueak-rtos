@@ -10,12 +10,20 @@ extern "C" {
 #endif
 
 
-// WiFi icon, green, 21x16px, signalling a healthy WiFi connection
+// WiFi icons, 21x16px
+const psq4_gfx_sprite_t psq4_ui_sprite_wifi_connecting_1;
+const psq4_gfx_sprite_t psq4_ui_sprite_wifi_connecting_2;
+const psq4_gfx_sprite_t psq4_ui_sprite_wifi_connecting_3;
 const psq4_gfx_sprite_t psq4_ui_sprite_wifi_ok;
-
-
-// WiFi icon, red, 21x16px, signalling an unhealthy WiFi connection
 const psq4_gfx_sprite_t psq4_ui_sprite_wifi_fail;
+
+const psq4_gfx_sprite_t psq4_ui_sprite_mqtt_connecting;
+const psq4_gfx_sprite_t psq4_ui_sprite_mqtt_fail;
+const psq4_gfx_sprite_t psq4_ui_sprite_mqtt_ok;
+
+const psq4_gfx_sprite_t psq4_ui_sprite_battery_dead_on;
+const psq4_gfx_sprite_t psq4_ui_sprite_battery_dead_off;
+const psq4_gfx_sprite_t psq4_ui_sprite_battery_ok;
 
 
 #ifdef __cplusplus

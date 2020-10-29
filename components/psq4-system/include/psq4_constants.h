@@ -33,8 +33,18 @@
 // See https://www.esp32.com/viewtopic.php?t=1442#p6613
 #define PSQ4_SPI_MAX_TRANS_SIZE_BYTES 4096
 
-#define PSQ4_WIFI_CONNECTED_BIT       BIT0
-#define PSQ4_CLOCK_READY_BIT          BIT1
-#define PSQ4_CLOCK_BATTERY_DEAD_BIT   BIT2
+#define PSQ4_WIFI_INITIALIZING_BIT            BIT0
+#define PSQ4_WIFI_CONNECTED_BIT               BIT1
+#define PSQ4_CLOCK_INITIALIZING_BIT           BIT2
+#define PSQ4_CLOCK_READY_BIT                  BIT3
+#define PSQ4_CLOCK_BATTERY_DEAD_BIT           BIT4
+#define PSQ4_MQTT_INITIALIZING_BIT            BIT5
+#define PSQ4_MQTT_CONNECTED_BIT               BIT6
+#define PSQ4_MQTT_SUBSCRIBED_BIT              BIT7
+#define PSQ4_THERMO_BOARD_INITIALIZING_BIT    BIT8
+#define PSQ4_THERMO_BOARD_OK_BIT              BIT9
+#define PSQ4_THERMO_MEDIUM_INITIALIZING_BIT   BIT10
+#define PSQ4_THERMO_MEDIUM_OK_BIT             BIT11
+
 
 #endif // PSQ4_CONSTANTS_H
