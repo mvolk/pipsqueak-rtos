@@ -13,3 +13,6 @@
 [submodule "components/esp32-tft"]
 	path = components/esp32-tft
 	url = git@github.com:mvolk/esp32-tft.git
+[submodule "components/esp32-adafruit-096-tft"]
+	path = components/esp32-adafruit-096-tft
+	url = git@github.com:mvolk/esp32-adafruit-096-tft.git
