@@ -12,4 +12,4 @@ idf_component_register(SRCS
                           "wifi_fail.c"
                           "psq4_ui.c"
                        INCLUDE_DIRS "include"
-                       REQUIRES "esp32-st7735r" "psq4-gfx" "psq4-system" "esp32-adafruit-144-tft" "esp32-adafruit-096-tft")
+                       REQUIRES "esp32-st7789" "psq4-gfx" "psq4-system" "esp32-adafruit-114-tft")

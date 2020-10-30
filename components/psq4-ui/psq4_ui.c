@@ -5,7 +5,9 @@
 #include <esp_log.h>
 #include <sdkconfig.h>
 #include <tft.h>
-#include <adafruit_096_tft.h>
+#include <st7789.h>
+#include <psq4_gfx.h>
+#include <adafruit_114_tft.h>
 #include "psq4_ui_sprites.h"
 #include <psq4_constants.h>
 #include <psq4_system.h>
@@ -217,13 +219,13 @@ static void psq4_ui_flush_task(void * pvParameters)
 void psq4_ui_task(void * pvParameters)
 {
     mutex = xSemaphoreCreateMutex();
-    st7735r_params_t params;
+    st7789_params_t params;
     params.host = CONFIG_PSQ4_SPI_HOST;
     params.gpio_cs = CONFIG_PSQ4_DISPLAY_CS_GPIO;
     params.gpio_dc = CONFIG_PSQ4_DISPLAY_DC_GPIO;
     params.gpio_rst = CONFIG_PSQ4_DISPLAY_RST_GPIO;
     params.gpio_bckl = CONFIG_PSQ4_DISPLAY_BCKL_GPIO;
-    tft = adafruit_096_tft_init(&params);
+    tft = adafruit_114_tft_init(&params);
     canvas_dim.w = tft->info.width;
     canvas_dim.h = tft->info.height;
     psq4_gfx_init(&canvas, &canvas_dim);

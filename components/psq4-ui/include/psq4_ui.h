@@ -2,8 +2,6 @@
 #define PSQ4_UI_H
 
 #include <freertos/FreeRTOS.h>
-#include <st7735r.h>
-#include <psq4_gfx.h>
 
 
 #ifdef __cplusplus
