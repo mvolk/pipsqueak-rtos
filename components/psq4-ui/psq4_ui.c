@@ -4,7 +4,8 @@
 #include <esp_err.h>
 #include <esp_log.h>
 #include <sdkconfig.h>
-#include <adafruit_144_tft.h>
+#include <tft.h>
+#include <adafruit_096_tft.h>
 #include "psq4_ui_sprites.h"
 #include <psq4_constants.h>
 #include <psq4_system.h>
@@ -19,11 +20,11 @@
 
 static const char * PSQ4_UI_TAG = "psq4-ui";
 
-static const psq4_gfx_coords_t wifi_sprite_coords = { 104, 110 };
+static psq4_gfx_coords_t wifi_sprite_coords;
 static const psq4_gfx_sprite_t * wifi_sprite;
 static psq4_gfx_bounds_t wifi_sprite_bounds;
 
-static const psq4_gfx_coords_t mqtt_sprite_coords = { 78, 110 };
+static psq4_gfx_coords_t mqtt_sprite_coords;
 static const psq4_gfx_sprite_t * mqtt_sprite;
 static psq4_gfx_bounds_t mqtt_sprite_bounds;
 
@@ -31,16 +32,13 @@ static psq4_gfx_bounds_t mqtt_sprite_bounds;
 // static psq4_gfx_sprite_t * clock_sprite;
 // static psq4_gfx_bounds_t clock_sprite_bounds;
 
-static const psq4_gfx_coords_t rtc_battery_sprite_coords = { 26, 110 };
+static psq4_gfx_coords_t rtc_battery_sprite_coords;
 static const psq4_gfx_sprite_t * rtc_battery_sprite;
 static psq4_gfx_bounds_t rtc_battery_sprite_bounds;
 
-static psq4_gfx_dim_t canvas_dim = {
-    CONFIG_PSQ4_DISPLAY_WIDTH,
-    CONFIG_PSQ4_DISPLAY_HEIGHT
-};
+static psq4_gfx_dim_t canvas_dim;
 static psq4_gfx_canvas_t canvas;
-static st7735r_device_t st7735r;
+static tft_handle_t tft;
 static SemaphoreHandle_t mutex;
 
 
@@ -48,6 +46,8 @@ static bool psq4_ui_wifi_status_indicator(EventBits_t event_bits, uint8_t phase)
 {
     const psq4_gfx_sprite_t * sprite = NULL;
     bool ok = false;
+    wifi_sprite_coords.x = canvas_dim.w - 23;
+    wifi_sprite_coords.y = canvas_dim.h - 17;
 
     if ((event_bits & PSQ4_WIFI_INITIALIZING_BIT) == PSQ4_WIFI_INITIALIZING_BIT) {
         if (phase == 0 || phase == 1) {
@@ -85,6 +85,8 @@ static bool psq4_ui_mqtt_status_indicator(EventBits_t event_bits, uint8_t phase)
 {
     const psq4_gfx_sprite_t * sprite = NULL;
     bool ok = false;
+    mqtt_sprite_coords.x = canvas_dim.w - 49;
+    mqtt_sprite_coords.y = canvas_dim.h - 17;
 
     if ((event_bits & PSQ4_MQTT_INITIALIZING_BIT) == PSQ4_MQTT_INITIALIZING_BIT) {
         sprite = &psq4_ui_sprite_mqtt_connecting;
@@ -123,6 +125,8 @@ static bool psq4_ui_rtc_battery_status_indicator(EventBits_t event_bits, uint8_t
 {
     const psq4_gfx_sprite_t * sprite = NULL;
     bool ok = false;
+    rtc_battery_sprite_coords.x = canvas_dim.w - 101;
+    rtc_battery_sprite_coords.y = canvas_dim.h - 17;
 
     if ((event_bits & PSQ4_CLOCK_BATTERY_DEAD_BIT) == PSQ4_CLOCK_BATTERY_DEAD_BIT) {
         if (phase == 2 || phase == 5) {
@@ -192,8 +196,8 @@ static void psq4_ui_flush_task(void * pvParameters)
             bounds.y1
         );
         if (len_bytes > 0) {
-            adafruit_144_tft_paint(
-                &st7735r,
+            tft16_render(
+                tft,
                 buffer,
                 bounds.x0,
                 bounds.y0,
@@ -213,13 +217,15 @@ static void psq4_ui_flush_task(void * pvParameters)
 void psq4_ui_task(void * pvParameters)
 {
     mutex = xSemaphoreCreateMutex();
-
-    st7735r.host = CONFIG_PSQ4_SPI_HOST;
-    st7735r.gpio_cs = CONFIG_PSQ4_DISPLAY_CS_GPIO;
-    st7735r.gpio_dc = CONFIG_PSQ4_DISPLAY_DC_GPIO;
-    st7735r.gpio_rst = CONFIG_PSQ4_DISPLAY_RST_GPIO;
-    st7735r.gpio_bckl = CONFIG_PSQ4_DISPLAY_BCKL_GPIO;
-    adafruit_144_tft_init(&st7735r);
+    st7735r_params_t params;
+    params.host = CONFIG_PSQ4_SPI_HOST;
+    params.gpio_cs = CONFIG_PSQ4_DISPLAY_CS_GPIO;
+    params.gpio_dc = CONFIG_PSQ4_DISPLAY_DC_GPIO;
+    params.gpio_rst = CONFIG_PSQ4_DISPLAY_RST_GPIO;
+    params.gpio_bckl = CONFIG_PSQ4_DISPLAY_BCKL_GPIO;
+    tft = adafruit_096_tft_init(&params);
+    canvas_dim.w = tft->info.width;
+    canvas_dim.h = tft->info.height;
     psq4_gfx_init(&canvas, &canvas_dim);
 
     // Paint the background color over the entire canvas

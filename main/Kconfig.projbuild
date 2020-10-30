@@ -130,20 +130,6 @@ menu "Pipsqueak"
     endmenu
 
     menu "Display"
-        config PSQ4_DISPLAY_WIDTH
-          int "Pixel width of the display"
-          range 0 256
-          default 128
-          help
-              The width (in pixels) of the display panel.
-
-        config PSQ4_DISPLAY_HEIGHT
-            int "Pixel height of the display"
-            range 0 256
-            default 128
-            help
-                The height (in pixels) of the display panel.
-
         config PSQ4_DISPLAY_CS_GPIO
             int "Display's Chip Selector (CS) I/O Pin"
             range 0 33
