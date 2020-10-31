@@ -1,6 +1,6 @@
 # PipsqueakRTOS
 
-The real-time operating system for v4 (ESP-32 based) Pipsqueak hardware.
+The real time operating system (RTOS) for v4 (ESP-32 based) Pipsqueak hardware.
 Written against the FreeRTOS-based ESP IoT Development Framework (IDF).
 
 ## Notice
@@ -20,25 +20,50 @@ temperature of my ferments. As a technologist, I have a strong interest in
 learning new technologies. Pipsqueaks are the result: hobbiest electronic devices
 with varying capabilities and no reasonable product-market fit. :)
 
-## Lineage
+## Getting Started
 
-I've been tinkering with "pipsqueaks" for about five years. The earliest versions
-consisted of a python script running on a Raspberry Pi. I moved on to
-microcontrollers using the Arduino platform a few years later and quickly progressed
-from a Nano to a Photon to a Wemos Mini D1 and on to custom Espressif esp8266 boards
-as a I sought smaller footprints, higher reliability and more features.
+This repository uses Git submodules and requires some setup.
 
-All of the microcontroller-based pipsqueaks have used a bespoke TCP/IP protocol and
-matched Node.js server running on an AWS EC2 instance. While great for learning, this
-is getting old from a maintenance perspective. AWS IoT is fairly mature now, offering
-great security, complete communications solutions and serverless technologies in the
-cloud. But the esp8266 felt a bit underpowered for all the extra overhead, and after
-a couple of years of Arduino programming, I'd like to sink my teeth into something a
-little closer to the hardware.
+Begin by cloning this repository:
+```shell
+# Clone this repository
+git clone --recurse-submodules https://github.com/mvolk/pipsqueak-rtos.git
+# Clone nested submodules
+git submodule update --init --recursive
+```
 
-Which brings us to now. My latest effort is porting the Arduino-based v3 operating
-system over to FreeRTOS, an ecosystem that is new to me, and to migrate from
-bespoke binary protocols and servers to the AWS IoT platform.
+Next, set up your ESP-IDF environment. Refer to the ESP-IDF Programming Guide's
+[Getting Started](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html)
+section and the VS Code Configuration Tips for MacOS below.
+
+You'll need to create an AWS account (if you don't have one already) and create
+a Thing. Refer to
+[Getting started with AWS IoT Core](https://docs.aws.amazon.com/iot/latest/developerguide/iot-gs.html).
+
+The X.509 certificates AWS generates for your Thing need to be added
+to `components/psq4-aws-iot/certs` as `certificate.pem.crt`, `private.pem.key` and
+`public.pem.key`. Files with these names are ignored by Git, and should not be
+committed or shared.
+
+Also take note of your Thing's name, your Thing's ARN, and the custom endpoint
+specific to your AWS account. Your custom endpoint can be found in the Settings
+section of your AWS IoT dashboard.
+
+Now you're ready to set up the configuration parameters. You can do this with the
+ESP-IDF extension to VS Code by running `ESP-IDF: Launch gui configuration tool`,
+or you can use the command `idf.py menuconfig` in your terminal. Either way,
+you'll need to supply values for at least the following parameters:
+
+* Pipsqueak -> WiFi, both SSID and password
+* Pipsqueak -> AWS IoT Thing, both the name and ARN that you recorded earlier
+* Pipsqueak -> PSQ4_USE_SNTP must be set to `true` if your external RTC module's
+  battery power has been interrupted since the RTC module's clock was last
+  synchronized, but should be set to `false` otherwise when developing in order
+  to minimize the load on SNTP servers.
+* Component config -> Amazon Web Services IoT Platform -> AWS IoT Endpoint Hostname
+  must be set to the custom AWS IoT endpoint you recorded earlier.
+
+You're now ready to compile the code and flash it to your Pipsqueak v4 hardware.
 
 ## VS Code Configuration Tips for MacOS
 

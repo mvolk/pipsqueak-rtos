@@ -1,6 +1,7 @@
 /*
  * MIT License
  *
+ * Copyright (c) 2017 David Antliff
  * Copyright (c) 2020 Michael Volk
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -10,8 +11,8 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * The above copyright notice, this permission notice, and the disclaimer below
+ * shall be included in all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -21,10 +22,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * Derived from the MIT-licensed work of David Antliff
+ * Derived from the MIT-licensed work of David Antliff:
  * https://github.com/DavidAntliff/esp32-ds18b20-example
- * Original license reproduced above; original copyright reproduced below:
- * Copyright (c) 2017 David Antliff
  */
 
 #include "psq4_thermometers.h"
@@ -172,7 +171,7 @@ static void psq4_temperature_sense(void * pvParameters)
     DS18B20_Info * device = ds18b20_malloc();
     ESP_LOGI(
         PSQ4_TEMPERATURE_TAG,
-        "Single device optimisations enabled for %s",
+        "Single device optimizations enabled for %s",
         sensor->name
     );
     ds18b20_init_solo(device, owb);
@@ -196,7 +195,7 @@ static void psq4_temperature_sense(void * pvParameters)
         status_code = ds18b20_read_temp(device, &reading);
         if (status_code != DS18B20_OK) {
             ++error_count;
-            ESP_LOGE(
+            ESP_LOGW(
                 PSQ4_TEMPERATURE_TAG,
                 "%s sample %d failed with code %d",
                 sensor->name,
