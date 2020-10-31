@@ -247,7 +247,7 @@ void psq4_ui_task(void * pvParameters)
             continue;
         }
 
-        event_bits = xEventGroupGetBits(psq4_system_state()->event_group);
+        event_bits = xEventGroupGetBits(psq4_system()->event_group);
 
         ok = ok && psq4_ui_wifi_status_indicator(event_bits, phase);
         ok = ok && psq4_ui_mqtt_status_indicator(event_bits, phase);
