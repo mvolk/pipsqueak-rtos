@@ -190,6 +190,7 @@ menu "Pipsqueak"
 
     config PSQ4_USE_SNTP
         bool "Use SNTP (recommended in production)"
+        default false
         help
             Use SNTP to keep system and external clock drift in check.
 
