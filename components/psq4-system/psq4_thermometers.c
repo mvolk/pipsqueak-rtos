@@ -178,9 +178,9 @@ static void psq4_temperature_sense(void * pvParameters)
     ds18b20_use_crc(device, true);
     ds18b20_set_resolution(device, sensor->resolution);
 
-    int status_code = 0;
+    int status_code;
     int error_count = 0;
-    int sample_count = 0;
+    int read_attempt;
     while (true) {
         ds18b20_convert_all(owb);
 
@@ -192,35 +192,40 @@ static void psq4_temperature_sense(void * pvParameters)
         // (using printf before reading may take too long)
 
         float reading;
-        status_code = ds18b20_read_temp(device, &reading);
-        if (status_code != DS18B20_OK) {
-            ++error_count;
-            ESP_LOGW(
+        read_attempt = 0;
+        do {
+            status_code = ds18b20_read_temp(device, &reading);
+            if (status_code != DS18B20_OK) {
+                ++error_count;
+                ESP_LOGW(
+                    PSQ4_TEMPERATURE_TAG,
+                    "%s read attempt %d failed with code %d",
+                    sensor->name,
+                    ++read_attempt,
+                    status_code
+                );
+                continue;
+            }
+        } while (status_code != DS18B20_OK && read_attempt < 3);
+
+        if (status_code == DS18B20_OK ) {
+            // Print results in a separate loop, after all have been read
+            ESP_LOGD(
                 PSQ4_TEMPERATURE_TAG,
-                "%s sample %d failed with code %d",
+                "%s read attempt %d: %.3f C (%d errors)",
                 sensor->name,
-                ++sample_count,
-                status_code
+                read_attempt,
+                reading,
+                error_count
             );
-            continue;
-        }
 
-        // Print results in a separate loop, after all have been read
-        ESP_LOGD(
-            PSQ4_TEMPERATURE_TAG,
-            "%s sample %d: %.3f C (%d errors)",
-            sensor->name,
-            ++sample_count,
-            reading,
-            error_count
-        );
-
-        if (xQueueSend(sensor->queue, &reading, 250.0 / portTICK_PERIOD_MS) != pdTRUE) {
-            ESP_LOGE(
-                PSQ4_TEMPERATURE_TAG,
-                "FAILED to enqueue %s temperature reading",
-                sensor->name
-            );
+            if (xQueueSend(sensor->queue, &reading, 250.0 / portTICK_PERIOD_MS) != pdTRUE) {
+                ESP_LOGE(
+                    PSQ4_TEMPERATURE_TAG,
+                    "FAILED to enqueue %s temperature reading",
+                    sensor->name
+                );
+            }
         }
     }
 }
