@@ -1,0 +1,8 @@
+Most of this code is provided under the MIT license, with various
+copyright holders.
+
+Some third party components upon which this project depend are
+licensed under other licenses, most noteably Apache 2.0.
+
+Please refer to licensing information at the top of most source
+files, and LICENSE.txt files provided with some of the components.

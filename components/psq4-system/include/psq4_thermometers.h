@@ -1,6 +1,7 @@
 /*
  * MIT License
  *
+ * Copyright (c) 2017 David Antliff
  * Copyright (c) 2020 Michael Volk
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -10,8 +11,8 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * The above copyright notice, this permission notice, and the disclaimer below
+ * shall be included in all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -21,10 +22,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * Derived the MIT-licensed work of David Antliff
+ * Derived from the MIT-licensed work of David Antliff:
  * https://github.com/DavidAntliff/esp32-ds18b20-example
- * Original license reproduced above; original copyright reproduced below:
- * Copyright (c) 2017 David Antliff
  */
 
 #ifndef PSQ4_THERMOMETERS_H
