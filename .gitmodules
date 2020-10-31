@@ -16,3 +16,6 @@
 [submodule "components/esp-aws-iot"]
 	path = components/esp-aws-iot
 	url = https://github.com/espressif/esp-aws-iot
+[submodule "components/esp32-ds3231"]
+	path = components/esp32-ds3231
+	url = https://github.com/mvolk/esp32-ds3231.git
