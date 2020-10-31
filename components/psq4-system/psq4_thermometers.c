@@ -133,7 +133,8 @@ static void psq4_temperature_sense(void * pvParameters)
         ESP_LOGI(
             PSQ4_TEMPERATURE_TAG,
             "Seeking %s device, found candidate #%d: %s",
-            sensor->name, num_devices,
+            sensor->name,
+            ++num_devices,
             rom_code_s
         );
         ++num_devices;
