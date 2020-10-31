@@ -171,7 +171,7 @@ static void psq4_temperature_sense(void * pvParameters)
     DS18B20_Info * device = ds18b20_malloc();
     ESP_LOGI(
         PSQ4_TEMPERATURE_TAG,
-        "Single device optimisations enabled for %s",
+        "Single device optimizations enabled for %s",
         sensor->name
     );
     ds18b20_init_solo(device, owb);
@@ -195,7 +195,7 @@ static void psq4_temperature_sense(void * pvParameters)
         status_code = ds18b20_read_temp(device, &reading);
         if (status_code != DS18B20_OK) {
             ++error_count;
-            ESP_LOGE(
+            ESP_LOGW(
                 PSQ4_TEMPERATURE_TAG,
                 "%s sample %d failed with code %d",
                 sensor->name,
