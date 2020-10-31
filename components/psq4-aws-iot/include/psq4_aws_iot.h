@@ -1,6 +1,8 @@
 /*
  * MIT License
  *
+ * Copyright (c) 2020 Michael Volk
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -8,8 +10,8 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * The above copyright notice this permission notice, and the disclaimer below
+ * shall be included in all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -18,56 +20,44 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
- * Copyright (c) 2020 Michael Volk
  */
 
-#ifndef PSQ4_SYSTEM_H
-#define PSQ4_SYSTEM_H
+#ifndef PSQ4_AWS_IOT_H
+#define PSQ4_AWS_IOT_H
 
-#include <time.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/event_groups.h>
-#include <driver/spi_master.h>
-#include <esp_err.h>
 
-
-typedef struct {
-    spi_bus_config_t spi_bus_cfg;
-    EventGroupHandle_t event_group;
-} psq4_system_t;
-
-
-typedef psq4_system_t* psq4_system_handle_t;
-
+#include <aws_iot_mqtt_client_interface.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 
-/** @brief Initialize system functions */
-psq4_system_handle_t psq4_system_init();
+void psq4_aws_iot_init();
 
 
-/** @brief Obtain a reference to the system state struct instance */
-psq4_system_handle_t psq4_system();
+// Note that this blocks until the subscription is created
+void psq4_mqtt_subscribe(
+    const char *topic,
+    enum QoS qos,
+    pApplicationHandler_t handler,
+    EventBits_t initializingEventBit,
+    EventBits_t connectedEventBit
+);
 
 
-/** @brief Wait for WiFi to be available */
-esp_err_t psq4_system_await_wifi(TickType_t xTicksToWait);
-
-
-/** @brief Wait for clock to be reliable */
-esp_err_t  psq4_system_await_clock(TickType_t xTicksToWait);
-
-
-/** @brief Return the current unix epoch time */
-time_t psq4_system_time();
+// Note that this blocks until the message is published
+void psq4_mqtt_publish(
+    const char *topic,
+    enum QoS qos,
+    const char *payload
+);
 
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // PSQ4_SYSTEM_H
+#endif // PSQ4_AWS_IOT_H

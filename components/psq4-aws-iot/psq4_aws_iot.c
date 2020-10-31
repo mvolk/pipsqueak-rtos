@@ -10,8 +10,8 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * The above copyright notice this permission notice, and the disclaimer below
+ * shall be included in all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -22,23 +22,40 @@
  * SOFTWARE.
  */
 
+#include "psq4_aws_iot.h"
+
+#include <string.h>
 #include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
-
-#include <psq4_ui.h>
-#include <psq4_aws_iot.h>
-#include <psq4_system.h>
-#include <psq4_constants.h>
+#include <esp_log.h>
+#include <aws_iot_version.h>
 
 
-static psq4_ui_params_t ui_params;
+extern void psq4_mqtt_init();
 
+static const char *PSQ4_AWS_IOT_TAG = "psq4-aws-iot";
 
-void app_main(void)
-{
-    psq4_system_init();
-    psq4_aws_iot_init();
+static void log_sdk_version() {
+    if (strcmp(VERSION_TAG, "") == 0) {
+        ESP_LOGI(
+            PSQ4_AWS_IOT_TAG,
+            "AWS IoT Embedded SDK version %d.%d.%d",
+            VERSION_MAJOR,
+            VERSION_MINOR,
+            VERSION_PATCH
+        );
+    } else {
+        ESP_LOGI(
+            PSQ4_AWS_IOT_TAG,
+            "AWS IoT Embedded SDK version %d.%d.%d-%s",
+            VERSION_MAJOR,
+            VERSION_MINOR,
+            VERSION_PATCH,
+            VERSION_TAG
+        );
+    }
+}
 
-    ui_params.max_trans_size = PSQ4_SPI_MAX_TRANS_SIZE_BYTES;
-    xTaskCreate(&psq4_ui_task, "uiTask", 4096, &ui_params, 5, NULL);
+void psq4_aws_iot_init() {
+    log_sdk_version();
+    psq4_mqtt_init();
 }

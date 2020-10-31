@@ -33,7 +33,8 @@
 #include "psq4_constants.h"
 #include "psq4_thermometers.h"
 
-static psq4_system_t psq4_system;
+
+static psq4_system_t _psq4_system;
 
 
 static void nvs_init() {
@@ -49,15 +50,15 @@ static void nvs_init() {
 // Initializes the SPI bus, reboots on failure
 static void spi_init()
 {
-    psq4_system.spi_bus_cfg.miso_io_num = CONFIG_PSQ4_SPI_MISO_GPIO;
-    psq4_system.spi_bus_cfg.mosi_io_num = CONFIG_PSQ4_SPI_MOSI_GPIO;
-    psq4_system.spi_bus_cfg.sclk_io_num = CONFIG_PSQ4_SPI_CLK_GPIO;
-    psq4_system.spi_bus_cfg.quadwp_io_num = -1;
-    psq4_system.spi_bus_cfg.quadhd_io_num = -1;
-    psq4_system.spi_bus_cfg.max_transfer_sz = PSQ4_SPI_MAX_TRANS_SIZE_BYTES;
+    _psq4_system.spi_bus_cfg.miso_io_num = CONFIG_PSQ4_SPI_MISO_GPIO;
+    _psq4_system.spi_bus_cfg.mosi_io_num = CONFIG_PSQ4_SPI_MOSI_GPIO;
+    _psq4_system.spi_bus_cfg.sclk_io_num = CONFIG_PSQ4_SPI_CLK_GPIO;
+    _psq4_system.spi_bus_cfg.quadwp_io_num = -1;
+    _psq4_system.spi_bus_cfg.quadhd_io_num = -1;
+    _psq4_system.spi_bus_cfg.max_transfer_sz = PSQ4_SPI_MAX_TRANS_SIZE_BYTES;
     esp_err_t ret = spi_bus_initialize(
         CONFIG_PSQ4_SPI_HOST,
-        &psq4_system.spi_bus_cfg,
+        &_psq4_system.spi_bus_cfg,
         CONFIG_PSQ4_SPI_DMA_CHANNEL
     );
     ESP_ERROR_CHECK(ret);
@@ -75,7 +76,7 @@ psq4_system_handle_t psq4_system_init() {
     xEventGroupSetBits(event_group, PSQ4_MQTT_INITIALIZING_BIT);
     xEventGroupSetBits(event_group, PSQ4_THERMO_BOARD_INITIALIZING_BIT);
     xEventGroupSetBits(event_group, PSQ4_THERMO_MEDIUM_INITIALIZING_BIT);
-    psq4_system.event_group = event_group;
+    _psq4_system.event_group = event_group;
 
     // Initialize NVS
     nvs_init();
@@ -92,19 +93,19 @@ psq4_system_handle_t psq4_system_init() {
     // Initialize timekeeping
     psq4_time_init(event_group);
 
-    return &psq4_system;
+    return &_psq4_system;
 }
 
 
-psq4_system_handle_t psq4_system_state() {
-    return &psq4_system;
+psq4_system_handle_t psq4_system() {
+    return &_psq4_system;
 }
 
 
 esp_err_t psq4_system_await_wifi(TickType_t xTicksToWait)
 {
     EventBits_t bits = xEventGroupWaitBits(
-        psq4_system.event_group,
+        _psq4_system.event_group,
         PSQ4_WIFI_CONNECTED_BIT,
         false,
         true,
@@ -120,7 +121,7 @@ esp_err_t psq4_system_await_wifi(TickType_t xTicksToWait)
 esp_err_t psq4_system_await_clock(TickType_t xTicksToWait)
 {
     EventBits_t bits = xEventGroupWaitBits(
-        psq4_system.event_group,
+        _psq4_system.event_group,
         PSQ4_CLOCK_READY_BIT,
         false,
         true,
