@@ -206,7 +206,7 @@ static void psq4_temperature_sense(void * pvParameters)
                 );
                 continue;
             }
-        } while (status_code != DS18B20_OK && read_attempt < 3);
+        } while (status_code != DS18B20_OK && read_attempt <= 3);
 
         if (status_code == DS18B20_OK ) {
             // Print results in a separate loop, after all have been read
