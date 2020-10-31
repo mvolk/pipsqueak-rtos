@@ -13,6 +13,26 @@ menu "Pipsqueak"
                 The password (WPA or WPA2) for the WiFi access point.
     endmenu
 
+    menu "AWS IoT Thing"
+        config AWS_IOT_THING_ARN
+            string "IoT Thing ARN"
+            default "arn:value:not:specified"
+            help
+                AWS IoT ARN unique to this device. Begins with "arn:".
+
+        config AWS_IOT_THING_NAME
+            string "IoT Thing Name"
+            default "thing-name"
+            help
+                The name given to the AWS IoT Thing representing this device.
+
+                Thing names should consist of lower case letters, numbers, and dashes.
+
+                The Thing name is used in MQTT topic naming, which is case-sensitive
+                and limited to letters, numbers and dashes. The use of upper case
+                letters in MQTT topic (and by extension, Thing) names is discouraged.
+    endmenu
+
     menu "SPI Bus"
         config PSQ4_SPI_MISO_GPIO
             int "MISO I/O Pin"
