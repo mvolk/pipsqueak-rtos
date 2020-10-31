@@ -13,3 +13,6 @@
 [submodule "components/esp32-adafruit-114-tft"]
 	path = components/esp32-adafruit-114-tft
 	url = https://github.com/mvolk/esp32-adafruit-114-tft.git
+[submodule "components/esp-aws-iot"]
+	path = components/esp-aws-iot
+	url = https://github.com/espressif/esp-aws-iot

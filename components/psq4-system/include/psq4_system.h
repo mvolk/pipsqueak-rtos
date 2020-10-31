@@ -51,7 +51,7 @@ psq4_system_handle_t psq4_system_init();
 
 
 /** @brief Obtain a reference to the system state struct instance */
-psq4_system_handle_t psq4_system_state();
+psq4_system_handle_t psq4_system();
 
 
 /** @brief Wait for WiFi to be available */

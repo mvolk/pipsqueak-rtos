@@ -21,12 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
 
-#include "psq4_ui.h"
-#include "psq4_system.h"
-#include "psq4_constants.h"
+#include <psq4_ui.h>
+#include <psq4_aws_iot.h>
+#include <psq4_system.h>
+#include <psq4_constants.h>
 
 
 static psq4_ui_params_t ui_params;
@@ -34,7 +35,8 @@ static psq4_ui_params_t ui_params;
 
 void app_main(void)
 {
-    /* psq4_system_handle_t system = */ psq4_system_init();
+    psq4_system_init();
+    psq4_aws_iot_init();
 
     ui_params.max_trans_size = PSQ4_SPI_MAX_TRANS_SIZE_BYTES;
     xTaskCreate(&psq4_ui_task, "uiTask", 4096, &ui_params, 5, NULL);
