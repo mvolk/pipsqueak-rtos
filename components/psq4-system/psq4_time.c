@@ -22,8 +22,10 @@
  * SOFTWARE.
  */
 
-#include "psq4_time.h"
 #include <string.h>
+#include <time.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/event_groups.h>
 #include <freertos/task.h>
 #include <esp_event.h>
 #include <esp_log.h>
