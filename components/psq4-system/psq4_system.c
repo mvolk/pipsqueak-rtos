@@ -28,11 +28,12 @@
 #include <esp_system.h>
 #include <esp_log.h>
 #include <nvs_flash.h>
-#include "psq4_time.h"
-#include "psq4_wifi.h"
 #include "psq4_constants.h"
-#include "psq4_thermometers.h"
 
+extern void psq4_time_init(EventGroupHandle_t system_event_group);
+extern time_t psq4_time_now();
+void psq4_thermometers_init(EventGroupHandle_t system_event_group);
+extern void psq4_wifi_init(EventGroupHandle_t system_event_group);
 
 static psq4_system_t _psq4_system;
 

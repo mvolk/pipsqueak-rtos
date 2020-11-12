@@ -26,15 +26,16 @@
  * https://github.com/DavidAntliff/esp32-ds18b20-example
  */
 
-#include "psq4_thermometers.h"
+#include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <freertos/queue.h>
+#include <freertos/event_groups.h>
 #include <driver/rmt.h>
 #include <esp_log.h>
 #include <owb.h>
 #include <owb_rmt.h>
-#include "psq4_constants.h"
 #include <ds18b20.h>
+#include "psq4_constants.h"
 
 
 typedef struct {
