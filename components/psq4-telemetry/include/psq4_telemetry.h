@@ -22,25 +22,27 @@
  * SOFTWARE.
  */
 
+#ifndef PSQ4_TELEMETRY_H
+#define PSQ4_TELEMETRY_H
+
 #include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
-
-#include <psq4_aws_iot.h>
-#include <psq4_constants.h>
+#include <freertos/queue.h>
+#include <freertos/event_groups.h>
+#include <esp_err.h>
 #include <psq4_system.h>
-#include <psq4_telemetry.h>
-#include <psq4_ui.h>
 
 
-static psq4_ui_params_t ui_params;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
-void app_main(void)
-{
-    psq4_system_init();
-    psq4_aws_iot_init();
-    psq4_telemetry_init();
+/** @brief Initialize telemetry */
+void psq4_telemetry_init();
 
-    ui_params.max_trans_size = PSQ4_SPI_MAX_TRANS_SIZE_BYTES;
-    xTaskCreate(&psq4_ui_task, "uiTask", 4096, &ui_params, 5, NULL);
+
+#ifdef __cplusplus
 }
+#endif
+
+#endif // PSQ4_TELEMETRY_H

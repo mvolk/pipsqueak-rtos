@@ -312,12 +312,23 @@ void psq4_mqtt_publish(
             portMAX_DELAY
         );
         rc = aws_iot_mqtt_publish(&client, topic, strlen(topic), &params);
-        if (SUCCESS != rc) {
+        attempt_num++;
+        if (MQTT_CLIENT_NOT_IDLE_ERROR == rc) {
+            if (attempt_num % 100 == 0) {
+                ESP_LOGW(
+                    PSQ4_AWS_IOT_MQTT_CLIENT_TAG,
+                    "MQTT publish to topic %s is failing (attempt #%d) because the MQTT client is not idle",
+                    topic,
+                    attempt_num
+                );
+            }
+            vTaskDelay(5.0 / portTICK_RATE_MS);
+        } else if (SUCCESS != rc) {
             ESP_LOGW(
                 PSQ4_AWS_IOT_MQTT_CLIENT_TAG,
                 "MQTT publish to topic %s failed on attempt #%d with IoT Error %d",
                 topic,
-                attempt_num++,
+                attempt_num,
                 rc
             );
             xEventGroupSetBits(
