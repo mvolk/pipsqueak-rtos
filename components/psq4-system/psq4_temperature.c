@@ -188,10 +188,11 @@ static void psq4_temperature_sense(void * pvParameters)
             if (result != pdPASS) {
                 ESP_LOGE(
                     PSQ4_TEMPERATURE_TAG,
-                    "FAILED to emit %s temperature reading, code %d",
+                    "FATAL: Failed to emit %s temperature reading, code %d",
                     sensor->name,
                     result
                 );
+                esp_restart();
             }
 
             if (first_reading) {
@@ -231,9 +232,10 @@ static void psq4_temperature_distribute(void * pvParameters) {
                 if (send_result != pdPASS) {
                     ESP_LOGE(
                         PSQ4_TEMPERATURE_TAG,
-                        "FAILED to distribute temperature reading, code %d",
+                        "FATAL: Failed to distribute temperature reading, code %d",
                         send_result
                     );
+                    esp_restart();
                 }
             }
             distributed_temperature = ewma_temperature;
