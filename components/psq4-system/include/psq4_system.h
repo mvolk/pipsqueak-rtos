@@ -27,6 +27,7 @@
 
 #include <time.h>
 #include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
 #include <freertos/event_groups.h>
 #include <driver/spi_master.h>
 #include <esp_err.h>
@@ -64,6 +65,15 @@ esp_err_t  psq4_system_await_clock(TickType_t xTicksToWait);
 
 /** @brief Return the current unix epoch time */
 time_t psq4_system_time();
+
+
+/**
+ * @brief Register as a consumer of temperature changes
+ *
+ * Temperature changes will be emitted via direct to task "mailbox"
+ * notifications, using xTaskNotify(). Consume with xTaskNotifyWait().
+ */
+esp_err_t psq4_temperature_add_consumer(TaskHandle_t task, TickType_t xTicksToWait);
 
 
 #ifdef __cplusplus

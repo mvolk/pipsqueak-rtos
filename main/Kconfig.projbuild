@@ -124,25 +124,13 @@ menu "Pipsqueak"
     endmenu
 
     menu "1-Wire Interface"
-        config PSQ4_EXTERNAL_DS18B20_GPIO
-            int "External DS18B20 1-Wire I/O Pin"
+        config PSQ4_DS18B20_GPIO
+            int "DS18B20 1-Wire I/O Pin"
             range 0 33
             default 18
             help
                 GPIO number (IOxx) to access the One Wire Bus to which the external temperature
                 sensor - and only the external temperature sensor - is connected.
-
-                Some GPIOs are used for other purposes (flash connections, etc.) and cannot be used.
-
-                GPIOs 34-39 are input-only so cannot be used to drive the One Wire Bus.
-
-        config PSQ4_INTERNAL_DS18B20_GPIO
-            int "Internal DS18B20 1-Wire I/O Pin"
-            range 0 33
-            default 19
-            help
-                GPIO number (IOxx) to access the One Wire Bus to which the internal temperature
-                sensor - and only the internal temperature sensor - is connected.
 
                 Some GPIOs are used for other purposes (flash connections, etc.) and cannot be used.
 
