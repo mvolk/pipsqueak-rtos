@@ -32,11 +32,11 @@
 
 extern void psq4_time_init(EventGroupHandle_t system_event_group);
 extern time_t psq4_time_now();
-void psq4_thermometers_init(EventGroupHandle_t system_event_group);
+extern void psq4_temperature_init(EventGroupHandle_t system_event_group);
 extern void psq4_wifi_init(EventGroupHandle_t system_event_group);
 
+static const char * PSQ4_SYSTEM_TAG = "psq4_system";
 static psq4_system_t _psq4_system;
-
 
 static void nvs_init() {
     esp_err_t ret = nvs_flash_init();
@@ -69,14 +69,13 @@ static void spi_init()
 psq4_system_handle_t psq4_system_init() {
     EventGroupHandle_t event_group = xEventGroupCreate();
     if (event_group == NULL) {
-      ESP_LOGE("psq4-system", "Failed to create event group");
+      ESP_LOGE(PSQ4_SYSTEM_TAG, "Failed to create event group");
       esp_restart();
     }
     xEventGroupSetBits(event_group, PSQ4_WIFI_INITIALIZING_BIT);
     xEventGroupSetBits(event_group, PSQ4_CLOCK_INITIALIZING_BIT);
     xEventGroupSetBits(event_group, PSQ4_MQTT_INITIALIZING_BIT);
-    xEventGroupSetBits(event_group, PSQ4_THERMO_BOARD_INITIALIZING_BIT);
-    xEventGroupSetBits(event_group, PSQ4_THERMO_MEDIUM_INITIALIZING_BIT);
+    xEventGroupSetBits(event_group, PSQ4_THERMOMETER_INITIALIZING_BIT);
     _psq4_system.event_group = event_group;
 
     // Initialize NVS
@@ -89,7 +88,7 @@ psq4_system_handle_t psq4_system_init() {
     psq4_wifi_init(event_group);
 
     // Initialize temperature sensors
-    psq4_thermometers_init(event_group);
+    psq4_temperature_init(event_group);
 
     // Initialize timekeeping
     psq4_time_init(event_group);
