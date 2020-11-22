@@ -118,7 +118,7 @@ static void connect()
                 mqtt_host_port
             );
             // TODO: exponential backoff
-            vTaskDelay(1000 / portTICK_RATE_MS);
+            vTaskDelay(1000 / portTICK_PERIOD_MS);
         } else {
             xEventGroupSetBits(psq4_system()->event_group, PSQ4_MQTT_CONNECTED_BIT);
             xEventGroupClearBits(psq4_system()->event_group, PSQ4_MQTT_INITIALIZING_BIT);
@@ -153,7 +153,7 @@ static void reconnect()
                 mqtt_host_port
             );
             // TODO: exponential backoff
-            vTaskDelay(1000 / portTICK_RATE_MS);
+            vTaskDelay(1000 / portTICK_PERIOD_MS);
         } else {
             xEventGroupSetBits(psq4_system()->event_group, PSQ4_MQTT_CONNECTED_BIT);
             ESP_LOGI(
@@ -215,7 +215,7 @@ static void mqtt_maintenance_task(void *ignored)
         // Yield CPU time to the MQTT client
         aws_iot_mqtt_yield(&client, 100);
 
-        vTaskDelay(500.0 / portTICK_RATE_MS);
+        vTaskDelay(500.0 / portTICK_PERIOD_MS);
     }
 }
 
@@ -276,7 +276,7 @@ void psq4_mqtt_subscribe(
             );
             xEventGroupClearBits(psq4_system()->event_group, initializingEventBit);
             // TODO: exponential backoff
-            vTaskDelay(1000 / portTICK_RATE_MS);
+            vTaskDelay(1000 / portTICK_PERIOD_MS);
         } else {
             xEventGroupSetBits(psq4_system()->event_group, connectedEventBit);
             xEventGroupClearBits(psq4_system()->event_group, initializingEventBit);
@@ -322,7 +322,7 @@ void psq4_mqtt_publish(
                     attempt_num
                 );
             }
-            vTaskDelay(5.0 / portTICK_RATE_MS);
+            vTaskDelay(5.0 / portTICK_PERIOD_MS);
         } else if (SUCCESS != rc) {
             ESP_LOGW(
                 PSQ4_AWS_IOT_MQTT_CLIENT_TAG,
